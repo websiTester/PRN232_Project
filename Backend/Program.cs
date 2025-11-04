@@ -25,6 +25,10 @@ builder.Services.AddCors(options =>
 		});
 });
 
+
+
+
+
 var app = builder.Build();
 
 
@@ -38,7 +42,11 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseRateLimiter(); 
+
+
+app.MapControllers()
+   .RequireRateLimiting("fixed_by_ip"); app.UseRateLimiter(); 
 
 
 
