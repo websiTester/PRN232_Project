@@ -25,6 +25,7 @@ namespace Backend.Services
             var existing = await _userRepo.GetByUsernameAsync(dto.Username);
             if (existing != null)
                 return (false, "Username already exists");
+
             var validRoles = new[] { "Buyer", "Seller", "Admin" };
             if (!validRoles.Contains(dto.Role, StringComparer.OrdinalIgnoreCase))
                 return (false, "Invalid role. Must be Buyer, Seller, or Admin.");
@@ -45,14 +46,18 @@ namespace Backend.Services
         public async Task<(bool Success, string? Token, UserResponseDto? User, string Message)> LoginAsync(UserLoginDto dto)
         {
             var user = await _userRepo.GetByUsernameOrEmailAsync(dto.UsernameOrEmail);
-            if (user == null)
-                return (false, null, null, "User not found");
 
-            if (user.Password != dto.Password)
-                return (false, null, null, "Invalid password");
+            if (user == null || user.Password == null)
+                return (false, null, null, "Invalid username or password");
 
+            var verificationResult = _hasher.VerifyHashedPassword(user, user.Password, dto.Password);
 
-            var token = _jwt.GenerateToken(user.Username!, user.Role!);
+            if (verificationResult == PasswordVerificationResult.Failed)
+            {
+                return (false, null, null, "Invalid username or password");
+            }
+
+            var token = _jwt.GenerateToken(user.Id, user.Username!, user.Role!);
 
             var userRes = new UserResponseDto
             {
