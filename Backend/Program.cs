@@ -1,6 +1,11 @@
+using Backend.Models;
 using Backend.ProgramConfig;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<CloneEbayDbContext>(options =>
+	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddMyServices1();
 builder.Services.AddMyServices2();
