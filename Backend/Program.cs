@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<CloneEbayDbContext>(options =>
+	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddMyServices1(builder.Configuration);
 builder.Services.AddMyServices2();
 builder.Services.AddMyServices3();
@@ -30,6 +33,10 @@ builder.Services.AddCors(options =>
 		});
 });
 
+
+
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -46,6 +53,10 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseRateLimiter(); 
+
+
+app.MapControllers()
+   .RequireRateLimiting("fixed_by_ip"); app.UseRateLimiter(); 
 
 app.Run();
