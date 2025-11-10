@@ -20,28 +20,25 @@ namespace Backend.Controllers
 		public async Task<IActionResult> GetSellerById(int sellerId)
 		{
 			var seller = await _context.Users.Include(u => u.Feedbacks)
-				.FirstOrDefaultAsync(u => u.Id == sellerId && u.Role == "seller");
+				.ThenInclude(f => f.DetailFeedbacks)
+				.FirstOrDefaultAsync(u => u.Id == sellerId);
 
-			var negative = seller!.Feedbacks.Where(f => f.PositiveRate == -1).Count();
-			var neutral = seller!.Feedbacks.Where(f => f.PositiveRate == 0).Count();
-			var positive = seller!.Feedbacks.Where(f => f.PositiveRate == 1).Count();
-			var sellerResponse = new
-			{
-				sellerId = seller.Id,
-				sellerName = seller.Username,
-				numberOfPositive = positive,
-				numberOfNeutral = neutral,
-				numberOfNegative = negative
-			};
+			//var negative = seller!.Feedbacks.Where(f => f.PositiveRate == -1).Count();
+			//var neutral = seller!.Feedbacks.Where(f => f.PositiveRate == 0).Count();
+			//var positive = seller!.Feedbacks.Where(f => f.PositiveRate == 1).Count();
+			
 				
-			return Ok();
+			return Ok(seller);
 		}
 
 
 		[HttpGet("order/{orderId}")]
 		public async Task<IActionResult> GetOrderById(int orderId)
 		{
-			var order = await _context.OrderTables.Include(ot => ot.OrderItems)
+			var order = await _context.OrderTables
+				.Include(o => o.Feedbacks)
+				.ThenInclude(f => f.DetailFeedbacks)
+				.Include(ot => ot.OrderItems)
 				.ThenInclude(oi => oi.Product)
 				.ThenInclude(p => p.Seller)
 				.FirstOrDefaultAsync(o => o.Id == orderId);
@@ -53,7 +50,36 @@ namespace Backend.Controllers
 		[HttpPost("order/addfeedback/{orderId}")]
 		public async Task<IActionResult> AddFeedbackForOrder(int orderId, [FromBody] FeedbackDto feedbackDto)
 		{
-			
+			decimal everageRate = (feedbackDto.Communication + feedbackDto.DeliveryOnTime + feedbackDto.ExactSame)/3;
+
+
+			var feedback = new Feedback()
+			{
+				OrdersId = orderId,
+				PositiveRate = feedbackDto.PositiveRate,
+				AverageRating = everageRate,
+				TotalReviews = 1,
+				Comment = feedbackDto.Comment,
+				SellerId = feedbackDto.ReceiverId,
+
+			};
+
+			await _context.Feedbacks.AddAsync(feedback);
+			await _context.SaveChangesAsync();
+
+			var feedbackDetail = new DetailFeedback() { 
+				FeedbackId = feedback.Id,
+				Communication = feedbackDto.Communication,
+				DeliveryOnTime = feedbackDto.DeliveryOnTime,
+				ExactSame = feedbackDto.ExactSame
+			};
+			await _context.DetailFeedbacks.AddAsync(feedbackDetail);
+			await _context.SaveChangesAsync();
+
+
+			var order = await _context.OrderTables.FirstOrDefaultAsync(o => o.Id == orderId);
+			order.IsCommented = true;
+			await _context.SaveChangesAsync();
 
 			return Ok();
 		}

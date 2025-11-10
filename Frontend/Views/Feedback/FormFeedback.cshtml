@@ -63,7 +63,7 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <!-- Thông tin sản phẩm --><div class="col-md-3 text-center">
-                                <img src="https://placehold.co/150x150/e0e0e0/777?text=Sản+phẩm+A" class="img-fluid rounded border" alt="Sản phẩm A">
+                                <img src="https://placehold.co/150x150/e0e0e0/777?text=Sản+phẩm+A" class="img-fluid rounded border" alt="@Model.OrderTable.OrderItems.ToList()[0].Product.Title">
                             </div>
 
                             <div class="col-md-9">
@@ -72,6 +72,7 @@
 
                                 <hr>
                                 <form asp-action="FormFeedback" method="post">
+                                    <input type="hidden" asp-for="@Model.ReceiverId" value="@Model.ReceiverId" />
                                     <input type="hidden" asp-for="@Model.OrderTableId" value="@Model.OrderTable.Id" />
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">1. Đánh giá chung của bạn về giao dịch này:</label>
@@ -95,7 +96,10 @@
                                         </div>
                                     </div>
 
-
+                                    <div class="mb-3">
+                                        <label for="comment1" class="form-label fw-bold">2. Nhận xét chi tiết (tối đa 500 ký tự):</label>
+                                        <textarea asp-for="Comment" class="form-control" id="comment1" rows="3" placeholder="Chia sẻ trải nghiệm của bạn với người bán..."></textarea>
+                                    </div>
 
                                     <div class="mb-3">
                                         <label class="form-label fw-bold d-block mb-2">3. Đánh giá chi tiết về người bán (DSR):</label>
@@ -111,7 +115,7 @@
                                                     <option value="2">2 sao</option>
                                                     <option value="3">3 sao</option>
                                                     <option value="4">4 sao</option>
-                                                    <option value="5" selected>5 sao</option>
+                                                    <option value="5">5 sao</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -127,7 +131,7 @@
                                                     <option value="2">2 sao</option>
                                                     <option value="3">3 sao</option>
                                                     <option value="4">4 sao</option>
-                                                    <option value="5" selected>5 sao</option>
+                                                    <option value="5">5 sao</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -142,14 +146,22 @@
                                                     <option value="2">2 sao</option>
                                                     <option value="3">3 sao</option>
                                                     <option value="4">4 sao</option>
-                                                    <option value="5" selected>5 sao</option>
+                                                    <option value="5">5 sao</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                     </div>
+                                    <div>
+                                        @if (ViewBag.UpdatedResult != null)
+                                        {
+                                            <div class="alert alert-success" role="alert">
+												@ViewBag.UpdatedResult
+											</div>
+                                        }
+                                    </div>
 
-                                    <button type="submit" class="btn btn-primary btn-lg mt-3">Gửi đánh giá</button>
+                                    <button @(Model.OrderTable.IsCommented==true ? "disabled" : "") type="submit" class="btn btn-primary btn-lg mt-3">Gửi đánh giá</button>
                                 </form>
                                
                             </div>

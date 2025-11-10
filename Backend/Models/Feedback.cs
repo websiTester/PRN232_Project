@@ -17,6 +17,8 @@ public partial class Feedback
 
     public int? OrdersId { get; set; }
 
+    public string? Comment { get; set; }
+
     public virtual ICollection<DetailFeedback> DetailFeedbacks { get; set; } = new List<DetailFeedback>();
 
     public virtual OrderTable? Orders { get; set; }

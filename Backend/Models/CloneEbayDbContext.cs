@@ -219,6 +219,7 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.AverageRating)
                 .HasColumnType("decimal(3, 2)")
                 .HasColumnName("averageRating");
+            entity.Property(e => e.Comment).HasColumnName("comment");
             entity.Property(e => e.PositiveRate)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("positiveRate");
@@ -323,6 +324,7 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AddressId).HasColumnName("addressId");
             entity.Property(e => e.BuyerId).HasColumnName("buyerId");
+            entity.Property(e => e.IsCommented).HasColumnName("isCommented");
             entity.Property(e => e.OrderDate)
                 .HasColumnType("datetime")
                 .HasColumnName("orderDate");

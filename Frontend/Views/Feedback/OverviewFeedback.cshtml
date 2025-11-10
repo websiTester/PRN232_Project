@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@model User
+
+<!DOCTYPE html>
 <html lang="vi">
  <!-- ĐÃ BỎ: data-bs-theme="dark" -->
 <head>
@@ -122,7 +124,29 @@
 </head>
 <body class="text-dark">
     <!-- THAY ĐỔI: Bỏ bg-dark text-light, thêm text-dark -->
+    @{
+        int positiveCount = Model.Feedbacks.Count(f => f.PositiveRate >= 1);
+        int neutraCount = Model.Feedbacks.Count(f => f.PositiveRate == 0);
+        int negativeCount = Model.Feedbacks.Count(f => f.PositiveRate <= -1);
+        int totalFeedbackPoint = positiveCount + negativeCount * -1;
 
+        double deliveryOnTime = Model.Feedbacks
+        .Where(f => f.DetailFeedbacks != null && f.DetailFeedbacks.Any())
+        .SelectMany(f => f.DetailFeedbacks)
+        .Average(df => df.DeliveryOnTime) ?? 0;
+
+        double exactSame = Model.Feedbacks
+        .Where(f => f.DetailFeedbacks != null && f.DetailFeedbacks.Any())
+        .SelectMany(f => f.DetailFeedbacks)
+        .Average(df => df.ExactSame) ?? 0;
+
+        double communication = Model.Feedbacks
+        .Where(f => f.DetailFeedbacks != null && f.DetailFeedbacks.Any())
+        .SelectMany(f => f.DetailFeedbacks)
+        .Average(df => df.Communication) ?? 0;
+
+        double positivePercentage = positiveCount / (double)Model.Feedbacks.Count() * 100;
+    }
     <div class="container my-4" style="max-width: 800px;">
 
         <!-- 1. Thông tin người bán (Header) -->
@@ -131,8 +155,8 @@
                 <!-- Sử dụng placeholder cho logo -->
                 <img src="https://placehold.co/60x60/333/fff?text=Logo" alt="Seller Logo" class="seller-logo me-3">
                 <div>
-                    <h1 class="h4 fw-bold mb-0">netsystem_iot</h1>
-                    <p class="feedback-percentage mb-0">99.6% positive Feedback</p>
+                    <h1 class="h4 fw-bold mb-0">@Model.Username</h1>
+                    <p class="feedback-percentage mb-0">@(positivePercentage.ToString("F2"))% positive Feedback</p>
                 </div>
             </div>
             <i class="bi bi-heart heart-icon"></i>
@@ -149,21 +173,21 @@
 
         <!-- 3. Xếp hạng (Feedback ratings) -->
         <div class="content-section">
-            <h2 class="h5 fw-bold">Feedback ratings</h2>
+            <h2 class="h5 fw-bold">Feedback ratings: @totalFeedbackPoint</h2>
             <p class="section-subtitle">Last 12 months</p>
 
             <div class="row text-center mt-3 ratings-summary">
                 <div class="col">
                     <p>Positive</p>
-                    <h3>1,436</h3>
+                    <h3>@positiveCount</h3>
                 </div>
                 <div class="col">
                     <p>Neutral</p>
-                    <h3>8</h3>
+                    <h3>@neutraCount</h3>
                 </div>
                 <div class="col">
                     <p>Negative</p>
-                    <h3>5</h3>
+                    <h3>@negativeCount</h3>
                 </div>
             </div>
         </div>
@@ -178,40 +202,31 @@
                 <div class="detailed-rating-item">
                     <div class="rating-label mb-1">
                         <span>Accurate description</span>
-                        <span class="score">4.9</span>
+                        <span class="score">@exactSame</span>
                     </div>
                     <div class="progress" role="progressbar" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" style="width: 98%"></div> <!-- 4.9/5 = 98% -->
+                        <div class="progress-bar" style="width: @(exactSame*100/5)%"></div> <!-- 4.9/5 = 98% -->
                     </div>
                 </div>
                 <!-- Mục 2 -->
-                <div class="detailed-rating-item">
-                    <div class="rating-label mb-1">
-                        <span>Reasonable postage cost</span>
-                        <span class="score">5.0</span>
-                    </div>
-                    <div class="progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" style="width: 100%"></div> <!-- 5.0/5 = 100% -->
-                    </div>
-                </div>
                 <!-- Mục 3 -->
                 <div class="detailed-rating-item">
                     <div class="rating-label mb-1">
                         <span>Delivery time</span>
-                        <span class="score">4.9</span>
+                        <span class="score">@deliveryOnTime</span>
                     </div>
                     <div class="progress" role="progressbar" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" style="width: 98%"></div> <!-- 4.9/5 = 98% -->
+                        <div class="progress-bar" style="width: @(deliveryOnTime * 100 / 5)%"></div>
                     </div>
                 </div>
                 <!-- Mục 4 -->
                 <div class="detailed-rating-item">
                     <div class="rating-label mb-1">
                         <span>Communication</span>
-                        <span class="score">4.9</span>
+                        <span class="score">@communication</span>
                     </div>
                     <div class="progress" role="progressbar" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" style="width: 98%"></div> <!-- 4.9/5 = 98% -->
+                        <div class="progress-bar" style="width: @(communication * 100 / 5)%"></div> <!-- 4.9/5 = 98% -->
                     </div>
                 </div>
             </div>
