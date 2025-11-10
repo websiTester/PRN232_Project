@@ -4,7 +4,7 @@
     var sortedRatings = Model.RatingCounts.OrderByDescending(kv => kv.Key);
 }
 
-<div classs="container product-detail-container">
+<div class="container product-detail-container">
     <div class="row">
         <div class="col-md-5">
             <img src="@Model.Images" alt="@Model.Title" class="img-fluid product-detail-image" />
@@ -52,7 +52,23 @@
         <div class="col-md-4">
             <div class="rating-summary">
                 <div class="rating-score">@Model.AverageRating.ToString("F1")</div>
-                <div class="star-display-large">★★★★☆</div> <div>Based on @Model.ReviewCount ratings</div>
+
+                @* ✅ FIX BUG #3: DYNAMIC STAR DISPLAY *@
+                <div class="star-display-large">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Round(Model.AverageRating))
+                        {
+                            <span style="color: #f57f17;">★</span>
+                        }
+                        else
+                        {
+                            <span style="color: #ccc;">☆</span>
+                        }
+                    }
+                </div>
+
+                <div>Based on @Model.ReviewCount ratings</div>
             </div>
 
             <div class="rating-bars">
@@ -91,8 +107,8 @@
                             {
                                 <span>★</span>
                             }
-    @for (int i = review.Rating; i < 5; i++)
-    {
+                            @for (int i = review.Rating; i < 5; i++)
+                            {
                                 <span class="star-empty">☆</span>
                             }
                         </span>
