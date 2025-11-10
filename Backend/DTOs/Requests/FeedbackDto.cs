@@ -1,15 +1,13 @@
 ﻿using Backend.Models;
 
-namespace Frontend.Models
+namespace Backend.DTOs.Requests
 {
-	public class FormFeedbackViewModel
+	public class FeedbackDto
 	{
 		public int OrderTableId { get; set; }
-		public OrderTable OrderTable { get; set; }
 		public int PositiveRate { get; set; }
 		public int? DeliveryOnTime { get; set; }
 		public int? ExactSame { get; set; }
 		public int? Communication { get; set; }
-
 	}
 }

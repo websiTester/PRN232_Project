@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿using Backend.DTOs.Requests;
+using Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,11 +16,11 @@ namespace Backend.Controllers
 			_context = context;
 		}
 
-		[HttpGet("{id}")]
-		public async Task<IActionResult> GetSellerById(int id)
+		[HttpGet("seller/{sellerId}")]
+		public async Task<IActionResult> GetSellerById(int sellerId)
 		{
 			var seller = await _context.Users.Include(u => u.Feedbacks)
-				.FirstOrDefaultAsync(u => u.Id == id && u.Role == "seller");
+				.FirstOrDefaultAsync(u => u.Id == sellerId && u.Role == "seller");
 
 			var negative = seller!.Feedbacks.Where(f => f.PositiveRate == -1).Count();
 			var neutral = seller!.Feedbacks.Where(f => f.PositiveRate == 0).Count();
@@ -35,5 +36,32 @@ namespace Backend.Controllers
 				
 			return Ok();
 		}
+
+
+		[HttpGet("order/{orderId}")]
+		public async Task<IActionResult> GetOrderById(int orderId)
+		{
+			var order = await _context.OrderTables.Include(ot => ot.OrderItems)
+				.ThenInclude(oi => oi.Product)
+				.ThenInclude(p => p.Seller)
+				.FirstOrDefaultAsync(o => o.Id == orderId);
+
+			return Ok(order);
+		}
+
+
+		[HttpPost("order/addfeedback/{orderId}")]
+		public async Task<IActionResult> AddFeedbackForOrder(int orderId, [FromBody] FeedbackDto feedbackDto)
+		{
+			
+
+			return Ok();
+		}
+
+
+
+
+
+
 	}
 }

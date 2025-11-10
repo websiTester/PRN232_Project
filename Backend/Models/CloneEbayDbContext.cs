@@ -23,6 +23,8 @@ public partial class CloneEbayDbContext : DbContext
 
     public virtual DbSet<Coupon> Coupons { get; set; }
 
+    public virtual DbSet<DetailFeedback> DetailFeedbacks { get; set; }
+
     public virtual DbSet<Dispute> Disputes { get; set; }
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
@@ -49,12 +51,11 @@ public partial class CloneEbayDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-	//{
-	//	var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
-	//	optionsBuilder.UseSqlServer(ConnectionString);
-	//}
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+
+    }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
         {
@@ -159,6 +160,21 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasOne(d => d.Product).WithMany(p => p.Coupons)
                 .HasForeignKey(d => d.ProductId)
                 .HasConstraintName("FK__Coupon__productI__60A75C0F");
+        });
+
+        modelBuilder.Entity<DetailFeedback>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DetailFe__3213E83F0A7DCC61");
+
+            entity.ToTable("DetailFeedback");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.FeedbackId).HasColumnName("feedbackId");
+
+            entity.HasOne(d => d.Feedback).WithMany(p => p.DetailFeedbacks)
+                .HasForeignKey(d => d.FeedbackId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DetailFeedback_Feedback");
         });
 
         modelBuilder.Entity<Dispute>(entity =>

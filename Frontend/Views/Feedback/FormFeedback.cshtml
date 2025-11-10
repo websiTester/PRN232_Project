@@ -54,7 +54,7 @@
                     <i class="bi bi-star-fill"></i>
                     Form để lại đánh giá
                 </h1>
-                <p class="text-muted">Bạn đang để lại đánh giá cho Người bán: <strong>top_seller_123</strong></p>
+                <p class="text-muted">Bạn đang để lại đánh giá cho Người bán: <strong>@Model.OrderTable.OrderItems.ToList()[0].Product.Seller.Username</strong></p>
 
                 <!-- Tính năng 1: Hiển thị danh sách đơn hàng đã hoàn tất --><!-- Bắt đầu một mục đánh giá cho đơn hàng --><div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
@@ -66,93 +66,92 @@
                                 <img src="https://placehold.co/150x150/e0e0e0/777?text=Sản+phẩm+A" class="img-fluid rounded border" alt="Sản phẩm A">
                             </div>
 
-                            <!-- Form đánh giá cho sản phẩm này --><div class="col-md-9">
-                                <h4 class="h6">Sản phẩm: Tai nghe Bluetooth Chống Ồn XYZ</h4>
+                            <div class="col-md-9">
+                                <h4 class="h6">Sản phẩm: @Model.OrderTable.OrderItems.ToList()[0].Product.Title</h4>
                                 <p class="small text-muted">Mã đơn: #123-456789-01</p>
 
                                 <hr>
-
-                                <!-- Tính năng 2: Chọn Positive/Neutral/Negative --><div class="mb-3">
-                                    <label class="form-label fw-bold">1. Đánh giá chung của bạn về giao dịch này:</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="feedbackType1" id="positive1" value="positive" checked>
-                                        <label class="form-check-label" for="positive1">
-                                            <i class="bi bi-plus-circle-fill text-success"></i> Tích cực (Positive)
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="feedbackType1" id="neutral1" value="neutral">
-                                        <label class="form-check-label" for="neutral1">
-                                            <i class="bi bi-circle-fill text-warning"></i> Trung lập (Neutral)
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="feedbackType1" id="negative1" value="negative">
-                                        <label class="form-check-label" for="negative1">
-                                            <i class="bi bi-dash-circle-fill text-danger"></i> Tiêu cực (Negative)
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Tính năng 2: Nhập nhận xét --><div class="mb-3">
-                                    <label for="comment1" class="form-label fw-bold">2. Nhận xét chi tiết (tối đa 500 ký tự):</label>
-                                    <textarea class="form-control" id="comment1" rows="3" placeholder="Chia sẻ trải nghiệm của bạn với người bán..."></textarea>
-                                </div>
-
-                                <!-- Tính năng 3: Chấm điểm 1-5 sao (DSR) --><div class="mb-3">
-                                    <label class="form-label fw-bold d-block mb-2">3. Đánh giá chi tiết về người bán (DSR):</label>
-
-                                    <!-- DSR 1 --><div class="row align-items-center mb-2">
-                                        <div class="col-sm-5 col-6">
-                                            <span class="dsr-label">Hàng đúng như mô tả:</span>
+                                <form asp-action="FormFeedback" method="post">
+                                    <input type="hidden" asp-for="@Model.OrderTableId" value="@Model.OrderTable.Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">1. Đánh giá chung của bạn về giao dịch này:</label>
+                                        <div class="form-check">
+                                            <input asp-for="PositiveRate" id="positive1" class="form-check-input" type="radio" value="1" checked>
+                                            <label class="form-check-label" for="positive1">
+                                                <i class="bi bi-plus-circle-fill text-success"></i> Tích cực (Positive)
+                                            </label>
                                         </div>
-                                        <div class="col-sm-7 col-6">
-                                            <!-- THAY THẾ div.star-rating BẰNG select -->
-                                            <select class="form-select form-select-sm" aria-label="Đánh giá Hàng đúng như mô tả">
-                                                <option value="1">1 sao</option>
-                                                <option value="2">2 sao</option>
-                                                <option value="3">3 sao</option>
-                                                <option value="4">4 sao</option>
-                                                <option value="5" selected>5 sao</option>
-                                            </select>
+                                        <div class="form-check">
+                                            <input asp-for="PositiveRate" id="neutral1" class="form-check-input" type="radio" value="0">
+                                            <label class="form-check-label" for="neutral1">
+                                                <i class="bi bi-circle-fill text-warning"></i> Trung lập (Neutral)
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input asp-for="PositiveRate" id="negative1" class="form-check-input" type="radio" value="-1">
+                                            <label class="form-check-label" for="negative1">
+                                                <i class="bi bi-dash-circle-fill text-danger"></i> Tiêu cực (Negative)
+                                            </label>
                                         </div>
                                     </div>
 
-                                    <!-- DSR 2 --><div class="row align-items-center mb-2">
-                                        <div class="col-sm-5 col-6">
-                                            <span class="dsr-label">Giao tiếp với người bán:</span>
+
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold d-block mb-2">3. Đánh giá chi tiết về người bán (DSR):</label>
+
+                                        <div class="row align-items-center mb-2">
+                                            <div class="col-sm-5 col-6">
+                                                <span class="dsr-label">Hàng đúng như mô tả:</span>
+                                            </div>
+                                            <div class="col-sm-7 col-6">
+                                                <!-- THAY THẾ div.star-rating BẰNG select -->
+                                                <select asp-for="ExactSame" class="form-select form-select-sm" aria-label="Đánh giá Hàng đúng như mô tả">
+                                                    <option value="1">1 sao</option>
+                                                    <option value="2">2 sao</option>
+                                                    <option value="3">3 sao</option>
+                                                    <option value="4">4 sao</option>
+                                                    <option value="5" selected>5 sao</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div class="col-sm-7 col-6">
-                                            <!-- THAY THẾ div.star-rating BẰNG select -->
-                                            <select class="form-select form-select-sm" aria-label="Đánh giá Giao tiếp với người bán">
-                                                <option value="1">1 sao</option>
-                                                <option value="2">2 sao</option>
-                                                <option value="3">3 sao</option>
-                                                <option value="4">4 sao</option>
-                                                <option value="5" selected>5 sao</option>
-                                            </select>
+
+                                        <div class="row align-items-center mb-2">
+                                            <div class="col-sm-5 col-6">
+                                                <span class="dsr-label">Giao tiếp với người bán:</span>
+                                            </div>
+                                            <div class="col-sm-7 col-6">
+
+                                                <select asp-for="Communication" class="form-select form-select-sm" aria-label="Đánh giá Giao tiếp với người bán">
+                                                    <option value="1">1 sao</option>
+                                                    <option value="2">2 sao</option>
+                                                    <option value="3">3 sao</option>
+                                                    <option value="4">4 sao</option>
+                                                    <option value="5" selected>5 sao</option>
+                                                </select>
+                                            </div>
                                         </div>
+
+                                        <div class="row align-items-center mb-2">
+                                            <div class="col-sm-5 col-6">
+                                                <span class="dsr-label">Thời gian vận chuyển:</span>
+                                            </div>
+                                            <div class="col-sm-7 col-6">
+                                                <select asp-for="DeliveryOnTime" class="form-select form-select-sm" aria-label="Đánh giá Thời gian vận chuyển">
+                                                    <option value="1">1 sao</option>
+                                                    <option value="2">2 sao</option>
+                                                    <option value="3">3 sao</option>
+                                                    <option value="4">4 sao</option>
+                                                    <option value="5" selected>5 sao</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
                                     </div>
 
-                                    <!-- DSR 3 --><div class="row align-items-center mb-2">
-                                        <div class="col-sm-5 col-6">
-                                            <span class="dsr-label">Thời gian vận chuyển:</span>
-                                        </div>
-                                        <div class="col-sm-7 col-6">
-                                            <!-- THAY THẾ div.star-rating BẰNG select -->
-                                            <select class="form-select form-select-sm" aria-label="Đánh giá Thời gian vận chuyển">
-                                                <option value="1">1 sao</option>
-                                                <option value="2">2 sao</option>
-                                                <option value="3">3 sao</option>
-                                                <option value="4">4 sao</option>
-                                                <option value="5" selected>5 sao</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <!-- Nút Gửi --><button type="submit" class="btn btn-primary btn-lg mt-3">Gửi đánh giá</button>
+                                    <button type="submit" class="btn btn-primary btn-lg mt-3">Gửi đánh giá</button>
+                                </form>
+                               
                             </div>
                         </div>
                     </div>
