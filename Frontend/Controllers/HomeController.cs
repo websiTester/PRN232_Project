@@ -1,12 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Frontend.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using Backend.Models;
+using System.Text.Json;
 
 namespace Frontend.Controllers
 {
-	public class HomeController : Controller
-	{
-		public IActionResult Index()
-		{
-			return View();
-		}
-	}
+    public class HomeController : Controller
+    {
+        private readonly ApiClientHelper _apiClient;
+
+        public HomeController(ApiClientHelper apiClient)
+        {
+            _apiClient = apiClient;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var response = await _apiClient.GetAsync("products");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var products = JsonSerializer.Deserialize<List<Product>>(content, 
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    return View(products);
+                }
+                
+                return View(new List<Product>());
+            }
+            catch (Exception ex)
+            {
+                return View(new List<Product>());
+            }
+        }
+    }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly CloneEbayDbContext _context;
 
