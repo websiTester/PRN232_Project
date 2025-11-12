@@ -49,8 +49,8 @@ namespace Backend.Services
             if (user.Password != dto.Password)
                 return (false, null, null, "Invalid username or password");
 
+            Console.WriteLine("USER ID_-----------"+user.Id);
             var token = _jwt.GenerateToken(user.Id, user.Username!, user.Role!);
-
             var userRes = new UserResponseDto
             {
                 Id = user.Id,

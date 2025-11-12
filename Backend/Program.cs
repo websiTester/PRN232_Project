@@ -61,8 +61,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseRateLimiter(); 
+app.UseRateLimiter();
 
+app.UseCors("AllowAll");
 
 app.MapControllers()
    .RequireRateLimiting("fixed_by_ip"); app.UseRateLimiter(); 
