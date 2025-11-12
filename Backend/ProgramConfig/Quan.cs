@@ -18,8 +18,8 @@ namespace Backend.ProgramConfig
 
 
 
-            services.AddScoped<IDisputeRepository, DisputeRepository>();
-            services.AddScoped<IDisputeService, DisputeService>();
+            services.AddScoped<IDisputeRepositoryV2, DisputeRepositoryV2>();
+            services.AddScoped<IDisputeServiceV2, DisputeServiceV2>();
             //Configure services in program.cs here
             services.AddRateLimiter(options =>
             {

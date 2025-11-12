@@ -6,7 +6,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7233/api/"); 
+    client.BaseAddress = new Uri("http://localhost:5236/api/"); 
 });
 
 builder.Services.AddSession(options =>
