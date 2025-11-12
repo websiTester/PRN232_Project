@@ -13,59 +13,41 @@ namespace Backend.Repositories.Implementation
             _context = context;
         }
 
-        public async Task AddAsync(Dispute dispute)
-        {
-            await _context.Disputes.AddAsync(dispute);
-        }
-
-        public async Task<OrderTable> GetByIdAndBuyerAsync(int orderId, int buyerId)
+        public async Task<OrderTable> GetOrderByIdAndBuyerAsync(int orderId, int buyerId)
         {
             return await _context.OrderTables
-                        .FirstOrDefaultAsync(o => o.Id == orderId && o.BuyerId == buyerId);
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.BuyerId == buyerId);
         }
 
         public async Task<IEnumerable<OrderTable>> GetDisputableOrdersAsync(int buyerId)
         {
             var disputableStatuses = new[] { "Completed", "Shipped" };
+
             return await _context.OrderTables
-            .Where(o => o.BuyerId == buyerId && disputableStatuses.Contains(o.Status))
-
-            // Lấy thông tin cần thiết để hiển thị
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-                    .ThenInclude(p => p.Seller)
-                        .ThenInclude(s => s.Stores)
-
-            // Lấy các đơn hàng chưa có khiếu nại nào đang "Pending"
-            .Where(o => !_context.Disputes.Any(d => d.OrderId == o.Id && d.Status == "Pending"))
-
-            .OrderByDescending(o => o.OrderDate)
-            .ToListAsync();
+                .Where(o => o.BuyerId == buyerId && disputableStatuses.Contains(o.Status))
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Seller)
+                            .ThenInclude(s => s.Stores)
+                .Where(o => !_context.Disputes.Any(d => d.OrderId == o.Id && d.Status == "1"))
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
         }
 
-        public async Task<Dispute> GetLatestByOrderIdAsync(int orderId)
+        // === Dispute Methods ===
+        public async Task<Dispute> AddDisputeAsync(Dispute dispute)
         {
-            return await _context.Disputes
-                     .Where(d => d.OrderId == orderId)
-                     .OrderByDescending(d => d.SubmittedDate) // Lấy cái mới nhất
-                     .FirstOrDefaultAsync();
+            dispute.Status = "1";
+            await _context.Disputes.AddAsync(dispute);
+            
+            await _context.SaveChangesAsync(); // Giả định lưu ngay lập tức
+            return dispute;
         }
 
         public async Task<bool> HasPendingDisputeAsync(int orderId)
         {
             return await _context.Disputes
-                        .AnyAsync(d => d.OrderId == orderId && d.Status == "1");
+                .AnyAsync(d => d.OrderId == orderId && d.Status == "1");
         }
-    }
-
-    public class UnitOfWork : IUnitOfWork
-    {
-        private readonly CloneEbayDbContext _context;
-        public UnitOfWork(CloneEbayDbContext context) => _context = context;
-
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-    }
+    }    
 }

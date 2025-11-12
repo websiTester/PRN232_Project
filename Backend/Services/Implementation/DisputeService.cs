@@ -9,48 +9,16 @@ namespace Backend.Services.Implementation
     public class DisputeService : IDisputeService
     {
         private readonly IDisputeRepository _disputeRepo;
-        private readonly IUnitOfWork _unitOfWork;
-        public DisputeService(IDisputeRepository disputeRepository, IUnitOfWork unitOfWork)
+
+        public DisputeService(IDisputeRepository disputeRepo)
         {
-                    _disputeRepo = disputeRepository;
-            _unitOfWork = unitOfWork;}
-
-        public async Task<Dispute> CreateDisputeAsync(DisputeCreateDto dto, int currentUserId)
-        {
-            var order = await _disputeRepo.GetByIdAndBuyerAsync(dto.OrderId, currentUserId);
-            if (order == null)
-            {
-                throw new Exception("Bạn không có quyền khiếu nại cho đơn hàng này hoặc đơn hàng không tồn tại.");
-            }
-
-            // 2. Logic nghiệp vụ (eBay): Kiểm tra đã có khiếu nại "Pending" chưa
-            if (await _disputeRepo.HasPendingDisputeAsync(dto.OrderId))
-            {
-                throw new Exception("Đơn hàng này đã có một khiếu nại đang chờ xử lý.");
-            }
-
-            // 3. Tạo đối tượng
-            var newDispute = new Dispute
-            {
-                OrderId = dto.OrderId,
-                RaisedBy = currentUserId,
-                Description = dto.Description,
-                SubmittedDate = DateTime.UtcNow,
-                Status = "1" // 
-            };
-
-            await _disputeRepo.AddAsync(newDispute);
-            await _unitOfWork.SaveChangesAsync(); 
-
-            return newDispute;
-
+            _disputeRepo = disputeRepo;
         }
 
         public async Task<IEnumerable<DisputableOrderDto>> GetDisputableOrdersAsync(int buyerId)
         {
             var orders = await _disputeRepo.GetDisputableOrdersAsync(buyerId);
 
-            // Map từ Model (OrderTable) sang DTO (DisputableOrderDto)
             return orders.Select(o =>
             {
                 var firstItem = o.OrderItems.FirstOrDefault();
@@ -69,17 +37,34 @@ namespace Backend.Services.Implementation
             });
         }
 
-        public async Task<Dispute> GetDisputeForOrderAsync(int orderId, int currentUserId)
+        public async Task<Dispute> CreateDisputeAsync(DisputeCreateDto dto, int currentUserId)
         {
-            var order = await _disputeRepo.GetByIdAndBuyerAsync(orderId, currentUserId);
+            var order = await _disputeRepo.GetOrderByIdAndBuyerAsync(dto.OrderId, currentUserId);
             if (order == null)
             {
-                throw new Exception("Bạn không có quyền xem thông tin của đơn hàng này.");
+                throw new Exception("Đơn hàng không tồn tại hoặc bạn không sở hữu đơn hàng này.");
             }
 
-            var dispute = await _disputeRepo.GetLatestByOrderIdAsync(orderId);
+            if (await _disputeRepo.HasPendingDisputeAsync(dto.OrderId))
+            {
+                throw new Exception("Đơn hàng này đã có một khiếu nại đang chờ xử lý.");
+            }
 
-            return dispute;
+            var newDispute = new Dispute
+            {
+                OrderId = dto.OrderId,
+                Description = dto.Description,
+                RaisedBy = currentUserId,
+                Status = "Pending", // Status là nvarchar(20)
+                SubmittedDate = DateTime.UtcNow
+            };
+
+            return await _disputeRepo.AddDisputeAsync(newDispute);
+        }
+
+        public Task<Dispute> GetDisputeForOrderAsync(int orderId, int currentUserId)
+        {
+            throw new NotImplementedException();
         }
     }
     }

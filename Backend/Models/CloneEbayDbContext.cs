@@ -55,7 +55,6 @@ public partial class CloneEbayDbContext : DbContext
     {
 
     }
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>

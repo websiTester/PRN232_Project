@@ -24,9 +24,10 @@ namespace Backend.Utils
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()), // ✅ Bây giờ userId đã tồn tại
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()), 
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.Sid, userId.ToString())
             };
 
             var token = new JwtSecurityToken(

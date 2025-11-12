@@ -2,7 +2,10 @@
 using Backend.Repositories.Interface;
 using Backend.Services.Implementation;
 using Backend.Services.Interface;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Threading.RateLimiting;
 
 namespace Backend.ProgramConfig
@@ -11,9 +14,12 @@ namespace Backend.ProgramConfig
     {
         public static IServiceCollection AddMyServices4(this IServiceCollection services)
         {
+  
+
+
+
             services.AddScoped<IDisputeRepository, DisputeRepository>();
             services.AddScoped<IDisputeService, DisputeService>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             //Configure services in program.cs here
             services.AddRateLimiter(options =>
             {
@@ -28,7 +34,7 @@ namespace Backend.ProgramConfig
                     opt.QueueLimit = 0;
                 });
 
-                // Chính sách 2: Giới hạn theo User ID (Linh hoạt hơn)
+                // Chính sách 2: Giới hạn theo User ID 
                 // Cần xác thực (authentication) trước
                 options.AddPolicy("fixed_by_user", httpContext =>
                 {

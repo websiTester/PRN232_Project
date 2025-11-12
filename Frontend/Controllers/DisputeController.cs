@@ -6,7 +6,20 @@ namespace Frontend.Controllers
     {
         public IActionResult Create()
         {
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                // Nếu chưa đăng nhập (không có token), đá về trang Login
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // "Tiêm" token vào trang CSHTML
+            ViewData["ApiToken"] = token;
+
+            // Render trang Views/Dispute/Create.cshtml
             return View();
+
         }
     }
 }

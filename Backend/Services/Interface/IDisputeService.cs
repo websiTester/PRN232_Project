@@ -11,5 +11,6 @@ namespace Backend.Services.Interface
         Task<Dispute> GetDisputeForOrderAsync(int orderId, int currentUserId);
 
         Task<IEnumerable<DisputableOrderDto>> GetDisputableOrdersAsync(int buyerId);
+
     }
 }
