@@ -1,4 +1,7 @@
 ﻿@model ProductDetailDto
+@section Styles {
+    <link rel="stylesheet" href="~/css/product-detail.css" asp-append-version="true" />
+}
 @{
     ViewData["Title"] = Model.Title ?? "Product Detail";
     var sortedRatings = Model.RatingCounts.OrderByDescending(kv => kv.Key);
@@ -53,7 +56,6 @@
             <div class="rating-summary">
                 <div class="rating-score">@Model.AverageRating.ToString("F1")</div>
 
-                @* ✅ FIX BUG #3: DYNAMIC STAR DISPLAY *@
                 <div class="star-display-large">
                     @for (int i = 1; i <= 5; i++)
                     {
