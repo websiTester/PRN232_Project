@@ -52,9 +52,9 @@ public partial class CloneEbayDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server =(local); database = CloneEbayDB;uid=sa;pwd=123;TrustServerCertificate=True;Trusted_Connection=True;");
 
-    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
@@ -164,7 +164,7 @@ public partial class CloneEbayDbContext : DbContext
 
         modelBuilder.Entity<DetailFeedback>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__DetailFe__3213E83F0A7DCC61");
+            entity.HasKey(e => e.Id).HasName("PK__DetailFe__3213E83F42F835CA");
 
             entity.ToTable("DetailFeedback");
 
@@ -188,13 +188,22 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasIndex(e => e.RaisedBy, "IX_Dispute_raisedBy");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Comment)
+                .HasMaxLength(500)
+                .HasColumnName("comment");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.OrderId).HasColumnName("orderId");
             entity.Property(e => e.RaisedBy).HasColumnName("raisedBy");
             entity.Property(e => e.Resolution).HasColumnName("resolution");
+            entity.Property(e => e.SolvedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("solvedDate");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
+            entity.Property(e => e.SubmittedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("submittedDate");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Disputes)
                 .HasForeignKey(d => d.OrderId)
