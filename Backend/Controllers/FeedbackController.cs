@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers
 {
+	//http://localhost:5236/api/Feedback/seller/5
 	[ApiController]
 	[Route("api/[Controller]")]
 	public class FeedbackController : Controller

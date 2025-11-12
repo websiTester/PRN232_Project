@@ -1,9 +1,17 @@
 using Backend.Models;
 using Backend.ProgramConfig;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
 
+//docker-compose up --scale api=4 --build
+
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+	options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 builder.Services.AddDbContext<CloneEbayDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -38,7 +46,7 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
-
+app.UseForwardedHeaders();
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
