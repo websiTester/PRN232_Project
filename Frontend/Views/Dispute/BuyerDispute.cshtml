@@ -1,7 +1,6 @@
 ﻿@using Azure.Core
 @model List<Backend.DTOs.Dispute.DisputeListItemDto>
 @{
-    Layout = null;
     int buyerId = (int)ViewBag.buyerId;
     int? currentStatus = ViewBag.StatusFilter as int?;
     string currentTime = ViewBag.TimeFilter as string ?? "all";
@@ -25,15 +24,7 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- Header chính -->
-    <header class="bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <h1 class="text-2xl font-bold text-gray-900">
-                Khiếu nại Đã Gửi Của Bạn
-            </h1>
-            <p class="text-sm text-gray-500">Theo dõi tất cả các yêu cầu bạn đã gửi đến người bán.</p>
-        </div>
-    </header>
+    
 
     <!-- Nội dung chính -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
