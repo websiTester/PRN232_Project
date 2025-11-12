@@ -69,6 +69,7 @@ namespace Backend.Services
                 dtos.Add(new PurchaseHistoryItemDto
                 {
                     OrderItemId = item.Id,
+                    OrderId = item.OrderId ?? 0,
                     ProductId = item.Product.Id,
                     ProductTitle = item.Product.Title,
                     ProductImage = item.Product.Images,

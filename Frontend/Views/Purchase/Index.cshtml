@@ -116,15 +116,19 @@
                                     }
                                     else
                                     {
-                                        <button type="button"
-                                                class="btn btn-primary btn-leave-feedback-main"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#leaveReviewModal"
-                                                data-product-id="@item.ProductId"
-                                                data-product-title="@item.ProductTitle"
-                                                data-product-image="@item.ProductImage">
-                                            Leave Feedback
-                                        </button>
+                                        <form action="/feedback/FormFeedback" method="get">
+                                            <input type="hidden" name="id" value="@item.OrderId" />
+                                            <button type="submit"
+                                                    class="btn btn-primary btn-leave-feedback-main"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#leaveReviewModal"
+                                                    data-product-id="@item.ProductId"
+                                                    data-product-title="@item.ProductTitle"
+                                                    data-product-image="@item.ProductImage">
+                                                Leave Feedback
+                                            </button>
+                                        </form>
+                                        
                                     }
                                 </div>
                             </div>
@@ -145,7 +149,7 @@
                                 </div>
                                 <div class="order-seller-info">
                                     <p class="small-text mb-1">SELLER:</p>
-                                    <a href="#" class="seller-username">seller_username</a>
+                                    <a href="/feedback/OverviewFeedback" class="seller-username">seller_username</a>
                                     <p class="text-muted small-text mb-0">(12345)</p>
                                     <p class="text-muted small-text">99.6% positive Feedback</p>
                                 </div>
