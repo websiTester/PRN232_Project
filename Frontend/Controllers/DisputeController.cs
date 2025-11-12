@@ -107,71 +107,160 @@ namespace Frontend.Controllers
 
         [Route("dispute/seller/{sellerId}")]
         [HttpGet]
-        public async Task<IActionResult> SellerDispute(int sellerId)
+        public async Task<IActionResult> SellerDispute(int sellerId, int? statusFilter,          // 1,2,3,4 hoặc null = tất cả
+    string? timeFilter)          // "30", "60", "all"
         {
             try
             {
                 if (sellerId <= 0)
                 {
                     _logger.LogWarning("buyerId không hợp lệ: {sellerId}", sellerId);
-                    // luôn trả về list rỗng, không để Model = null
                     return View(new List<DisputeListItemDto>());
                 }
 
-                // Gọi ĐÚNG route: GET /api/disputes/buyer/{buyerId}
+                // Gọi API: GET /api/disputes/buyer/{buyerId}
                 var response = await _apiClient.GetAsync($"disputes/seller/{sellerId}");
 
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-
-                    if (string.IsNullOrWhiteSpace(content))
-                    {
-                        _logger.LogInformation("API trả về body rỗng cho buyerId: {sellerId}", sellerId);
-                        return View(new List<DisputeListItemDto>());
-                    }
-
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-
-                    List<DisputeListItemDto>? disputes = null;
-
-                    try
-                    {
-                        disputes = JsonSerializer.Deserialize<List<DisputeListItemDto>>(content, options);
-                    }
-                    catch (JsonException ex)
-                    {
-                        _logger.LogError(ex,
-                            "Không thể deserialize List<DisputeListItemDto> cho buyerId: {buyerId}. Content: {content}",
-                            sellerId, content);
-                        return View("Error");
-                    }
-
-                    // 🚀 Quan trọng: luôn trả về list, không trả null
-                    return View(disputes ?? new List<DisputeListItemDto>());
-                }
-
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    _logger.LogWarning("API không tìm thấy khiếu nại cho buyerId: {buyerId}", sellerId);
+                    _logger.LogError("Lỗi gọi API: {status} {reason}",
+                        response.StatusCode, response.ReasonPhrase);
                     return View(new List<DisputeListItemDto>());
                 }
 
-                _logger.LogError(
-                    "Lỗi API khi gọi /api/disputes/buyer/{buyerId}. Status: {status}, Reason: {reason}",
-                    sellerId, response.StatusCode, response.ReasonPhrase);
+                var content = await response.Content.ReadAsStringAsync();
 
-                return View("Error");
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var disputes = JsonSerializer.Deserialize<List<DisputeListItemDto>>(content, options)
+                              ?? new List<DisputeListItemDto>();
+
+                // ============ APPLY FILTER ============
+
+                var query = disputes.AsQueryable();
+
+                // 1. Filter theo status cụ thể (1,2,3,4)
+                if (statusFilter.HasValue)
+                {
+                    if (statusFilter.Value == 1) // Chưa phản hồi
+                    {
+                        query = query.Where(d => d.Status == "1");
+                    }
+                    else if (statusFilter.Value == 2) // Đã phản hồi
+                    {
+                        query = query.Where(d => d.Status == "2");
+                    }
+
+                }
+
+
+                // 3. Filter khoảng thời gian
+                if (!string.IsNullOrWhiteSpace(timeFilter) && timeFilter != "all")
+                {
+                    DateTime fromDate;
+
+                    if (timeFilter == "30")
+                        fromDate = DateTime.UtcNow.AddDays(-30);
+                    else if (timeFilter == "60")
+                        fromDate = DateTime.UtcNow.AddDays(-60);
+                    else
+                        fromDate = DateTime.MinValue;
+
+                    query = query.Where(d => d.SubmittedDate.HasValue &&
+                                             d.SubmittedDate.Value >= fromDate);
+                }
+
+                // 4. Sắp xếp: status 1 & 3 (chưa phản hồi) lên trước
+                var result = query
+                    .ToList();
+
+                // Lưu giá trị filter để view đánh dấu selected
+                ViewBag.sellerId = sellerId;
+                ViewBag.StatusFilter = statusFilter;
+                ViewBag.TimeFilter = timeFilter;
+
+                return View(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi nghiêm trọng khi lấy danh sách khiếu nại cho buyerId: {buyerId}", sellerId);
+                _logger.LogError(ex, "Lỗi nghiêm trọng khi lấy danh sách khiếu nại cho buyerId: {sellerId}", sellerId);
                 return View("Error");
             }
-        }
 
+        }
+        [Route("dispute/supporter")]
+        [HttpGet]
+        public async Task<IActionResult> SupporterDispute( int? statusFilter, string? timeFilter)          // "30", "60", "all"
+        {
+            
+                // Gọi API: GET /api/disputes/buyer/{buyerId}
+                var response = await _apiClient.GetAsync($"disputes/supporter");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Lỗi gọi API: {status} {reason}",
+                        response.StatusCode, response.ReasonPhrase);
+                    return View(new List<DisputeListItemDto>());
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var disputes = JsonSerializer.Deserialize<List<DisputeListItemDto>>(content, options)
+                              ?? new List<DisputeListItemDto>();
+
+                // ============ APPLY FILTER ============
+
+                var query = disputes.AsQueryable();
+
+                // 1. Filter theo status cụ thể (1,2,3,4)
+                if (statusFilter.HasValue)
+                {
+                    if (statusFilter.Value == 1) // Chưa phản hồi
+                    {
+                        query = query.Where(d => d.Status == "3");
+                    }
+                    else if (statusFilter.Value == 2) // Đã phản hồi
+                    {
+                        query = query.Where(d => d.Status == "4");
+                    }
+
+                }
+
+
+                // 3. Filter khoảng thời gian
+                if (!string.IsNullOrWhiteSpace(timeFilter) && timeFilter != "all")
+                {
+                    DateTime fromDate;
+
+                    if (timeFilter == "30")
+                        fromDate = DateTime.UtcNow.AddDays(-30);
+                    else if (timeFilter == "60")
+                        fromDate = DateTime.UtcNow.AddDays(-60);
+                    else
+                        fromDate = DateTime.MinValue;
+
+                    query = query.Where(d => d.SubmittedDate.HasValue &&
+                                             d.SubmittedDate.Value >= fromDate);
+                }
+
+                // 4. Sắp xếp: status 1 & 3 (chưa phản hồi) lên trước
+                var result = query
+                    .ToList();
+
+                ViewBag.StatusFilter = statusFilter;
+                ViewBag.TimeFilter = timeFilter;
+
+                return View(result);
+            
+
+        }
     }
 }

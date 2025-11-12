@@ -25,12 +25,13 @@ namespace Backend.Repositories
                         .ThenInclude(oi => oi.Product)
                             .ThenInclude(p => p.Seller)          // User seller
                 .ToListAsync();
+            
 
             // 2. Map sang DTO hoàn toàn bằng C#
             var result = disputes.Select(d =>
             {
                 var order = d.Order;
-
+                var parsed = DisputeDescriptionParser.Parse(d.Description);
                 var products = order?.OrderItems?
                     .Select(oi => new DisputeProductDto
                     {
@@ -47,10 +48,16 @@ namespace Backend.Repositories
                     BuyerName = order?.Buyer?.Username,
                     SellerName = products.Select(p => p.SellerName).Distinct().FirstOrDefault(),
                     Description = d.Description,
+                    ResolutionRequest = parsed.ResolutionRequest,
+                    MainReason = parsed.MainReason,
+                    DetailReason = parsed.DetailReason,
+                    UserContent = parsed.UserContent,
                     Status = d.Status,
                     SubmittedDate = d.SubmittedDate,
                     Products = products,
-                    Resolution = d.Resolution
+                    Resolution = d.Resolution,
+                    Comment = d.Comment,
+                    SolvedDate = d.SolvedDate,
                 };
             })
                 // ❶ Sắp xếp: status 1 & 3 lên trước, còn lại xuống dưới
@@ -81,7 +88,7 @@ namespace Backend.Repositories
             var result = disputes.Select(d =>
             {
                 var order = d.Order;
-
+                var parsed = DisputeDescriptionParser.Parse(d.Description);
                 var products = order?.OrderItems?
                     .Where(oi => oi.Product.SellerId == sellerId)
                     .Select(oi => new DisputeProductDto
@@ -99,10 +106,16 @@ namespace Backend.Repositories
                     BuyerName = order?.Buyer?.Username,
                     SellerName = products.Select(p => p.SellerName).Distinct().FirstOrDefault(),
                     Description = d.Description,
+                    ResolutionRequest = parsed.ResolutionRequest,
+                    MainReason = parsed.MainReason,
+                    DetailReason = parsed.DetailReason,
+                    UserContent = parsed.UserContent,
                     Status = d.Status,
                     SubmittedDate = d.SubmittedDate,
                     Products = products,
-                    Resolution = d.Resolution
+                    Resolution = d.Resolution,
+                    Comment = d.Comment,
+                    SolvedDate = d.SolvedDate,
                 };
             })
                 .OrderBy(x => (x.Status.Equals("1")) ? 0 : 1)
@@ -111,6 +124,70 @@ namespace Backend.Repositories
 
 
             return result;
+        }
+
+        public async Task<List<DisputeListItemDto>> GetDisputesForSupporterAsync()
+        {
+            // 1. Lấy dispute mà trong order có ít nhất 1 product thuộc seller đó
+            var disputes = await _context.Disputes
+                .Include(d => d.Order)
+                    .ThenInclude(o => o.Buyer)
+                .Include(d => d.Order)
+                    .ThenInclude(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                            .ThenInclude(p => p.Seller)
+                .Where(d =>  (d.Status.Equals("3") || d.Status.Equals("4")))
+                .ToListAsync();
+
+            // 2. Map sang DTO
+            var result = disputes.Select(d =>
+            {
+                var order = d.Order;
+                var parsed = DisputeDescriptionParser.Parse(d.Description);
+                var products = order?.OrderItems?
+                    .Select(oi => new DisputeProductDto
+                    {
+                        ProductId = (int)oi.ProductId,
+                        ProductTitle = oi.Product.Title,
+                        SellerName = oi.Product.Seller.Username
+                    })
+                    .ToList() ?? new List<DisputeProductDto>();
+
+                return new DisputeListItemDto
+                {
+                    Id = d.Id,
+                    OrderId = d.OrderId ?? 0,
+                    BuyerName = order?.Buyer?.Username,
+                    SellerName = products.Select(p => p.SellerName).Distinct().FirstOrDefault(),
+                    Description = d.Description,
+                    ResolutionRequest = parsed.ResolutionRequest,
+                    MainReason = parsed.MainReason,
+                    DetailReason = parsed.DetailReason,
+                    UserContent = parsed.UserContent,
+                    Status = d.Status,
+                    SubmittedDate = d.SubmittedDate,
+                    Products = products,
+                    Resolution = d.Resolution,
+                    Comment = d.Comment,
+                    SolvedDate = d.SolvedDate,
+                };
+            })
+                .OrderBy(x => (x.Status.Equals("3")) ? 0 : 1)
+                .OrderByDescending(x => x.SubmittedDate)
+                .ToList();
+
+
+            return result;
+        }
+
+        public async Task RespondDispute(RespondDisputeDto respond)
+        {
+            var dispute = await _context.Disputes.Where(d => d.Id == respond.Id).FirstOrDefaultAsync();
+            dispute.Resolution = respond.Resolution;
+            dispute.Comment = respond.Comment;
+            dispute.SolvedDate = respond.SolvedDate;
+            dispute.Status = respond.status;
+            await _context.SaveChangesAsync();
         }
     }
 
