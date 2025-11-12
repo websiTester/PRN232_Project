@@ -17,6 +17,12 @@ public partial class Dispute
 
     public string? Resolution { get; set; }
 
+    public DateTime? SubmittedDate { get; set; }
+
+    public DateTime? SolvedDate { get; set; }
+
+    public string? Comment { get; set; }
+
     public virtual OrderTable? Order { get; set; }
 
     public virtual User? RaisedByNavigation { get; set; }

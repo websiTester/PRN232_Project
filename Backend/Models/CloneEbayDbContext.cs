@@ -23,6 +23,8 @@ public partial class CloneEbayDbContext : DbContext
 
     public virtual DbSet<Coupon> Coupons { get; set; }
 
+    public virtual DbSet<DetailFeedback> DetailFeedbacks { get; set; }
+
     public virtual DbSet<Dispute> Disputes { get; set; }
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
@@ -50,11 +52,10 @@ public partial class CloneEbayDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-	{
-		var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
-		optionsBuilder.UseSqlServer(ConnectionString);
-	}
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server =(local); database = CloneEbayDB;uid=sa;pwd=123;TrustServerCertificate=True;Trusted_Connection=True;");
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
         {
@@ -161,6 +162,21 @@ public partial class CloneEbayDbContext : DbContext
                 .HasConstraintName("FK__Coupon__productI__60A75C0F");
         });
 
+        modelBuilder.Entity<DetailFeedback>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DetailFe__3213E83FCD9285DA");
+
+            entity.ToTable("DetailFeedback");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.FeedbackId).HasColumnName("feedbackId");
+
+            entity.HasOne(d => d.Feedback).WithMany(p => p.DetailFeedbacks)
+                .HasForeignKey(d => d.FeedbackId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DetailFeedback_Feedback");
+        });
+
         modelBuilder.Entity<Dispute>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Dispute__3213E83FC7A98713");
@@ -172,13 +188,22 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasIndex(e => e.RaisedBy, "IX_Dispute_raisedBy");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Comment)
+                .HasMaxLength(500)
+                .HasColumnName("comment");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.OrderId).HasColumnName("orderId");
             entity.Property(e => e.RaisedBy).HasColumnName("raisedBy");
             entity.Property(e => e.Resolution).HasColumnName("resolution");
+            entity.Property(e => e.SolvedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("solvedDate");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
+            entity.Property(e => e.SubmittedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("submittedDate");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Disputes)
                 .HasForeignKey(d => d.OrderId)
@@ -203,6 +228,7 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.AverageRating)
                 .HasColumnType("decimal(3, 2)")
                 .HasColumnName("averageRating");
+            entity.Property(e => e.Comment).HasColumnName("comment");
             entity.Property(e => e.PositiveRate)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("positiveRate");
@@ -307,6 +333,7 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AddressId).HasColumnName("addressId");
             entity.Property(e => e.BuyerId).HasColumnName("buyerId");
+            entity.Property(e => e.IsCommented).HasColumnName("isCommented");
             entity.Property(e => e.OrderDate)
                 .HasColumnType("datetime")
                 .HasColumnName("orderDate");

@@ -1,23 +1,31 @@
-﻿using Microsoft.AspNetCore.RateLimiting;
+﻿using Backend.Repositories.Implementation;
+using Backend.Repositories.Interface;
+using Backend.Services.Implementation;
+using Backend.Services.Interface;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 
 namespace Backend.ProgramConfig
 {
-	public static class Quan
-	{
-		public static IServiceCollection AddMyServices4(this IServiceCollection services)
-		{
+    public static class Quan
+    {
+        public static IServiceCollection AddMyServices4(this IServiceCollection services)
+        {
+            services.AddScoped<IDisputeRepository, DisputeRepository>();
+            services.AddScoped<IDisputeService, DisputeService>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             //Configure services in program.cs here
             services.AddRateLimiter(options =>
             {
                 // Chính sách 1: Giới hạn cố định (Fixed Window)
                 // Áp dụng cho toàn bộ API, dựa trên địa chỉ IP
-                options.AddFixedWindowLimiter(policyName: "fixed_by_ip", opt =>
+                options.AddSlidingWindowLimiter(policyName: "fixed_by_ip", opt =>
                 {
                     opt.PermitLimit = 100; // 100 requests
                     opt.Window = TimeSpan.FromMinutes(1); // trong 1 phút
-                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    opt.QueueLimit = 5; // Xếp hàng 5 request
+                    opt.SegmentsPerWindow = 6;
+
+                    opt.QueueLimit = 0;
                 });
 
                 // Chính sách 2: Giới hạn theo User ID (Linh hoạt hơn)
@@ -39,6 +47,6 @@ namespace Backend.ProgramConfig
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             });
             return services;
-		}
-	}
+        }
+    }
 }
