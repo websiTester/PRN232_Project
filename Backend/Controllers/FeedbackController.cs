@@ -21,6 +21,9 @@ namespace Backend.Controllers
 		{
 			var seller = await _context.Users.Include(u => u.Feedbacks)
 				.ThenInclude(f => f.DetailFeedbacks)
+				.Include(u => u.Products)
+				.ThenInclude(p => p.OrderItems)
+				.ThenInclude(ot => ot.Order)
 				.FirstOrDefaultAsync(u => u.Id == sellerId);
 
 			//var negative = seller!.Feedbacks.Where(f => f.PositiveRate == -1).Count();
