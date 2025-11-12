@@ -1,8 +1,13 @@
+using Backend.Models;
 using Backend.ProgramConfig;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMyServices1();
+builder.Services.AddDbContext<CloneEbayDbContext>(options =>
+	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddMyServices1(builder.Configuration);
 builder.Services.AddMyServices2();
 builder.Services.AddMyServices3();
 builder.Services.AddMyServices4();
@@ -10,8 +15,11 @@ builder.Services.AddMyServices5();
 builder.Services.AddMyServices6();
 builder.Services.AddMyServices7();
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
@@ -31,14 +39,17 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAll");
+
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
@@ -48,7 +59,5 @@ app.UseCors("AllowAll");
 
 app.MapControllers()
    .RequireRateLimiting("fixed_by_ip"); app.UseRateLimiter(); 
-
-
 
 app.Run();

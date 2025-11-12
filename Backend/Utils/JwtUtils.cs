@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Backend.Models;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,7 +15,8 @@ namespace Backend.Utils
             _config = config;
         }
 
-        public string GenerateToken(string username, string role = "User")
+        // ✅ THÊM PARAMETER int userId
+        public string GenerateToken(int userId, string username, string role = "User")
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -22,6 +24,7 @@ namespace Backend.Utils
 
             var claims = new[]
             {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()), // ✅ Bây giờ userId đã tồn tại
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.Role, role)
             };
@@ -30,7 +33,7 @@ namespace Backend.Utils
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(double.Parse(jwtSettings["ExpireMinutes"]!)),
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpireMinutes"]!)), // ✅ Đổi sang UtcNow
                 signingCredentials: creds
             );
 
@@ -62,7 +65,7 @@ namespace Backend.Utils
             }
             catch
             {
-                return null; // Token không hợp lệ
+                return null;
             }
         }
     }
