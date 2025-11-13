@@ -52,6 +52,9 @@ namespace Frontend.Controllers
 
                 HttpContext.Session.SetString("JwtToken", result.Token);
                 HttpContext.Session.SetString("Username", result.User.Username ?? "User");
+                // Set thêm userId và role
+                HttpContext.Session.SetString("UserId", result.User.Id.ToString());
+                HttpContext.Session.SetString("Role", result.User.Role ?? "User");
 
                 return Json(result);
             }

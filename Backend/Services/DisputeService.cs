@@ -21,5 +21,15 @@ namespace Backend.Services
         {
             return await _repository.GetDisputesBySellerAsync (sellerId);
         }
+
+        public Task<List<DisputeListItemDto>> GetDisputesForSupporterAsync()
+        {
+            return _repository.GetDisputesForSupporterAsync();
+        }
+
+        public async Task RespondDisputeAsync(RespondDisputeDto respond)
+        {
+            _repository.RespondDispute (respond);
+        }
     }
 }

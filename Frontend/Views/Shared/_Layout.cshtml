@@ -1,6 +1,8 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     var username = HttpContextAccessor.HttpContext.Session.GetString("Username");
+    var userId = HttpContextAccessor.HttpContext.Session.GetString("UserId");
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -34,7 +36,24 @@
                         <a href="#">Daily Deals</a>
                         <a href="#">Brand Outlet</a>
                         <a href="/dispute/create">View All Dispute</a>
-                        <a href="#">Help & Contact</a>
+                        @if (role == "buyer")
+                        {
+                            <a href="/dispute/buyer/@userId">SendedDispute</a>
+                        }
+                        else if (role == "seller")
+                        {
+                            <a href="/dispute/seller/@userId">Seller Dispute</a>
+                        }
+                        else if (role == "support")
+                        {
+                            <a href="/dispute/support/@userId">Support Dispute</a>
+                        }
+                        else
+                        {
+                            <a href="#">Dispute</a>
+                        }
+
+
                     </div>
                     <div class="gh-nav-right">
                         <img src="https://placehold.co/24x16?text=VN" alt="VN Flag" />

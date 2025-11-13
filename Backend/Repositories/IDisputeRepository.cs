@@ -8,5 +8,7 @@ namespace Backend.Repositories
     {
         Task<List<DisputeListItemDto>> GetDisputesByBuyerAsync(int buyerId);
         Task<List<DisputeListItemDto>> GetDisputesBySellerAsync(int sellerId);
+        Task<List<DisputeListItemDto>> GetDisputesForSupporterAsync();
+        Task RespondDispute(RespondDisputeDto respond);
     }
 }
