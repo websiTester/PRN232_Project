@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Force backend to listen only on port 5236 (HTTP). Frontend will call this port explicitly.
-builder.WebHost.UseUrls("http://localhost:5236");
+builder.Services.AddDbContext<CloneEbayDbContext>(options =>
+	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddMyServices1(builder.Configuration);
+builder.Services.AddMyServices1();
 builder.Services.AddMyServices2();
 builder.Services.AddMyServices3();
 builder.Services.AddMyServices4();
@@ -35,6 +35,10 @@ builder.Services.AddCors(options =>
 	});
 });
 
+
+
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -53,7 +57,11 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseRateLimiter(); 
+
+
+app.MapControllers()
+   .RequireRateLimiting("fixed_by_ip"); app.UseRateLimiter(); 
 // Map SignalR hub and require the same CORS policy for hub endpoints
 app.MapHub<Backend.Hubs.ChatHub>("/hubs/chat").RequireCors("AllowSpecificOrigins");
 
