@@ -50,12 +50,14 @@ namespace Backend.Services
             if (user == null || user.Password == null)
                 return (false, null, null, "Invalid username or password");
 
-            var verificationResult = _hasher.VerifyHashedPassword(user, user.Password, dto.Password);
+            //if (user.Password != dto.Password)
+                //return (false, null, null, "Invalid username or password");
+            // var verificationResult = _hasher.VerifyHashedPassword(user, user.Password, dto.Password);
 
-            if (verificationResult == PasswordVerificationResult.Failed)
-            {
-                return (false, null, null, "Invalid username or password");
-            }
+            // if (verificationResult == PasswordVerificationResult.Failed)
+            // {
+            //     return (false, null, null, "Invalid username or password");
+            // }
 
             var token = _jwt.GenerateToken(user.Id, user.Username!, user.Role!);
 

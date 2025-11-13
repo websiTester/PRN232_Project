@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- <ProjectReference Include="..\Frontend\Frontend.csproj" /> -->
     <ProjectReference Include="..\Backend\Backend.csproj" />
   </ItemGroup>
 
