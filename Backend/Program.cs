@@ -1,11 +1,12 @@
 using Backend.Models;
 using Backend.ProgramConfig;
+using Backend.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 
 //docker-compose up --scale api=4 --build
-
+//KhongCoMatKhau123@
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -40,7 +41,7 @@ builder.Services.AddCors(options =>
 				   .AllowAnyHeader();
 		});
 });
-
+builder.Services.AddHostedService<DisputeEscalationService>();
 
 
 

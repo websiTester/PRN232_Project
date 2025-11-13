@@ -189,6 +189,28 @@ namespace Backend.Repositories
             dispute.Status = respond.status;
             await _context.SaveChangesAsync();
         }
+
+        public async Task AutoEscalateDisputesAsync(int daysToEscalate)
+        {
+            var now = DateTime.UtcNow;
+
+            var overdueDisputes = await _context.Disputes
+                .Where(d => d.Status == "1"
+                            && d.SubmittedDate != null
+                            && EF.Functions.DateDiffDay(d.SubmittedDate.Value, now) >= daysToEscalate)
+                .ToListAsync();
+
+            if (overdueDisputes.Count == 0)
+                return;
+
+            foreach (var dispute in overdueDisputes)
+            {
+                dispute.Status = "3";
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 
 }
