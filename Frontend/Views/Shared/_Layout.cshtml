@@ -42,9 +42,9 @@
                         {
                             <a href="/dispute/seller/@userId">Seller Dispute</a>
                         }
-                        else if (role == "supporter")
+                        else if (role == "support")
                         {
-                            <a href="/dispute/supporter">Support Dispute</a>
+                            <a href="/dispute/support/@userId">Support Dispute</a>
                         }
                         else
                         {
@@ -73,16 +73,8 @@
                                 <a href="#" class="dropdown-item">Bids/Offers</a>
                                 <a href="#" class="dropdown-item">Watchlist</a>
 
-                                @if (role == "Buyer")
-                                {
-                                    <a asp-controller="Purchase" asp-action="Index" class="dropdown-item">Purchase History</a>
-                                }
-
-                                @if (role == "Seller")
-                                {
-                                    <a asp-controller="Sales" asp-action="Index" class="dropdown-item">My Sales</a>
-                                }
-
+                                <a asp-controller="Purchase" asp-action="Index" class="dropdown-item">Purchase History</a>
+                                <a asp-controller="Sales" asp-action="Index" class="dropdown-item">My Orders</a>
                                 <a href="#" class="dropdown-item">Buy Again</a>
                                 <a href="#" class="dropdown-item">Selling</a>
                                 <a href="#" class="dropdown-item">Saved Searches</a>
