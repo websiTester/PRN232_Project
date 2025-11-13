@@ -3,6 +3,7 @@
     public class PurchaseHistoryItemDto
     {
         public int OrderItemId { get; set; }
+        public int OrderId { get; set; }
         public int ProductId { get; set; }
         public string? ProductTitle { get; set; }
         public string? ProductImage { get; set; }

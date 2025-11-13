@@ -1,13 +1,22 @@
 using Backend.Models;
 using Backend.ProgramConfig;
+using Backend.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
 
+//docker-compose up --scale api=4 --build
+//KhongCoMatKhau123@
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+	options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 builder.Services.AddDbContext<CloneEbayDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddMyServices1();
+builder.Services.AddMyServices1(builder.Configuration);
 builder.Services.AddMyServices2();
 builder.Services.AddMyServices3();
 builder.Services.AddMyServices4();
@@ -34,13 +43,13 @@ builder.Services.AddCors(options =>
 			.AllowCredentials(); // required for SignalR negotiate when credentials mode is 'include'
 	});
 });
-
+builder.Services.AddHostedService<DisputeEscalationService>();
 
 
 
 
 var app = builder.Build();
-
+app.UseForwardedHeaders();
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
@@ -57,8 +66,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseRateLimiter(); 
+app.UseRateLimiter();
 
+app.UseCors("AllowAll");
 
 app.MapControllers()
    .RequireRateLimiting("fixed_by_ip"); app.UseRateLimiter(); 

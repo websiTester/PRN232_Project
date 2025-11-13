@@ -3,7 +3,6 @@ using Backend.DTOs.Responses;
 using Backend.Models;
 using Backend.Repositories;
 using Backend.Utils;
-using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Services
 {
@@ -11,13 +10,11 @@ namespace Backend.Services
     {
         private readonly UserRepository _userRepo;
         private readonly JwtUtils _jwt;
-        private readonly PasswordHasher<User> _hasher;
 
         public AuthService(UserRepository userRepo, JwtUtils jwt)
         {
             _userRepo = userRepo;
             _jwt = jwt;
-            _hasher = new PasswordHasher<User>();
         }
 
         public async Task<(bool Success, string Message)> RegisterAsync(UserRegisterDto dto)
@@ -35,9 +32,8 @@ namespace Backend.Services
                 Username = dto.Username,
                 Email = dto.Email,
                 Role = dto.Role,
+                Password = dto.Password
             };
-
-            user.Password = _hasher.HashPassword(user, dto.Password);
 
             await _userRepo.AddUserAsync(user);
             return (true, "User registered successfully");
@@ -50,17 +46,11 @@ namespace Backend.Services
             if (user == null || user.Password == null)
                 return (false, null, null, "Invalid username or password");
 
-            //if (user.Password != dto.Password)
-                //return (false, null, null, "Invalid username or password");
-            // var verificationResult = _hasher.VerifyHashedPassword(user, user.Password, dto.Password);
+            if (user.Password != dto.Password)
+                return (false, null, null, "Invalid username or password");
 
-            // if (verificationResult == PasswordVerificationResult.Failed)
-            // {
-            //     return (false, null, null, "Invalid username or password");
-            // }
-
+            Console.WriteLine("USER ID_-----------"+user.Id);
             var token = _jwt.GenerateToken(user.Id, user.Username!, user.Role!);
-
             var userRes = new UserResponseDto
             {
                 Id = user.Id,
