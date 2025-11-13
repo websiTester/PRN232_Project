@@ -36,7 +36,8 @@ namespace Backend.Services
                 Price = product.Price,
                 Images = product.Images,
                 CategoryName = product.Category?.Name,
-                SellerName = product.Seller?.Username
+                    SellerName = product.Seller?.Username,
+                    SellerId = product.Seller?.Id
             };
 
             var reviews = product.Reviews.ToList();

@@ -4,7 +4,8 @@
 	{
 		public static IServiceCollection AddMyServices5(this IServiceCollection services)
 		{
-			//Configure services in program.cs here
+			// Register SignalR
+			services.AddSignalR();
 
 			return services;
 		}

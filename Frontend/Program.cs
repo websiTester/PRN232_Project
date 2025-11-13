@@ -6,7 +6,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7233/api/"); 
+    client.BaseAddress = new Uri("http://localhost:5236/api/"); 
 });
 
 builder.Services.AddSession(options =>
@@ -28,7 +28,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+    // Running frontend on HTTP for local development; do not redirect to HTTPS
 app.UseStaticFiles();
 app.UseRouting();
 
