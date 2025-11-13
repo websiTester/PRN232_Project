@@ -1,5 +1,6 @@
 using Backend.Models;
 using Backend.ProgramConfig;
+using Backend.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,7 +41,7 @@ builder.Services.AddCors(options =>
 				   .AllowAnyHeader();
 		});
 });
-
+builder.Services.AddHostedService<DisputeEscalationService>();
 
 
 

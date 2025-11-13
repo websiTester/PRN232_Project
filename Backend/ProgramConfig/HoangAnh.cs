@@ -46,6 +46,7 @@
             services.AddScoped<AuthService>();
             services.AddScoped<UserRepository>();
 
+
             return services;
 		}
 	}
