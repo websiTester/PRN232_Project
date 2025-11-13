@@ -29,7 +29,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+    // Running frontend on HTTP for local development; do not redirect to HTTPS
 app.UseStaticFiles();
 app.UseRouting();
 

@@ -264,33 +264,16 @@ public partial class CloneEbayDbContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Message__3213E83F7144CC1A");
-
+            entity.HasKey(e => e.Id);
             entity.ToTable("Message");
-
-            entity.HasIndex(e => e.ProductId, "IX_Message_ProductId");
-
-            entity.HasIndex(e => e.ReceiverId, "IX_Message_receiverId");
-
-            entity.HasIndex(e => e.SenderId, "IX_Message_senderId");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.ReceiverId).HasColumnName("receiverId");
             entity.Property(e => e.SenderId).HasColumnName("senderId");
+            entity.Property(e => e.ReceiverId).HasColumnName("receiverId");
             entity.Property(e => e.Timestamp)
-                .HasColumnType("datetime")
-                .HasColumnName("timestamp");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Messages).HasForeignKey(d => d.ProductId);
-
-            entity.HasOne(d => d.Receiver).WithMany(p => p.MessageReceivers)
-                .HasForeignKey(d => d.ReceiverId)
-                .HasConstraintName("FK__Message__receive__5DCAEF64");
-
-            entity.HasOne(d => d.Sender).WithMany(p => p.MessageSenders)
-                .HasForeignKey(d => d.SenderId)
-                .HasConstraintName("FK__Message__senderI__5CD6CB2B");
+                .HasColumnName("timestamp")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>

@@ -11,6 +11,7 @@ namespace Backend.DTOs.Responses
         public string? Images { get; set; }
         public string? CategoryName { get; set; }
         public string? SellerName { get; set; }
+        public int? SellerId { get; set; }
 
         public List<ReviewDto> Reviews { get; set; } = new List<ReviewDto>();
         public double AverageRating { get; set; }

@@ -42,6 +42,8 @@
             const alertBox = document.getElementById("alert-message");
 
             if (result.success) {
+                localStorage.setItem("token", result.token);
+                localStorage.setItem("user", JSON.stringify(result.user));
                 // Thành công! Session cookie đã được lưu.
                 window.location.href = "/";
             } else {

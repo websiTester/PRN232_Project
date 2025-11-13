@@ -21,6 +21,13 @@
                 <a href="#">@Model.SellerName</a> |
                 <span>Category: </span>
                 <a href="#">@Model.CategoryName</a>
+                @* Chat with seller button *@
+                @if (Model.SellerId != null)
+                {
+                    <span> | </span>
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="chat-with-seller" data-seller-id="@Model.SellerId" data-seller-name="@Model.SellerName">Chat with seller</button>
+                }
+                
             </div>
 
             <hr />
@@ -125,3 +132,22 @@
         </div>
     </div>
 </div>
+<script>
+    (function(){
+        var btn = document.getElementById('chat-with-seller');
+        if(!btn) return;
+        btn.addEventListener('click', function(){
+            var id = btn.getAttribute('data-seller-id');
+            var name = btn.getAttribute('data-seller-name');
+            try{
+                if(window.openChatWith){
+                    window.openChatWith(id, name);
+                } else {
+                    // fallback: ensure chat toggle visible and set session data for later
+                    localStorage.setItem('chat_target_user', JSON.stringify({ id: id, name: name }));
+                    var toggle = document.getElementById('chat-toggle-btn'); if(toggle) toggle.click();
+                }
+            }catch(e){ console.error('open chat error', e); }
+        });
+    })();
+</script>
