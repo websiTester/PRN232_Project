@@ -121,6 +121,10 @@ body {
     margin-left: 0.5rem;
 }
 
+/* ===============================================
+   DROPDOWN FIX - Sửa lỗi dropdown bị tắt khi di chuột
+   =============================================== */
+
 .dropdown {
     position: relative;
     display: inline-block;
@@ -138,8 +142,21 @@ body {
     padding: 0.5rem 0;
     right: 0;
     border: 1px solid #e5e5e5;
-    margin-top: 8px;
+    /* Đặt dropdown cách trigger 4px */
+    top: calc(100% + 4px);
+    margin-top: 0;
 }
+
+    /* Tạo pseudo-element để fill khoảng trống giữa trigger và dropdown */
+    .dropdown-content::before {
+        content: '';
+        position: absolute;
+        top: -4px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: transparent;
+    }
 
 .dropdown:hover .dropdown-content {
     display: block;
@@ -152,11 +169,27 @@ body {
     text-decoration: none;
     font-size: 13px;
     white-space: nowrap;
+    transition: background-color 0.2s ease;
 }
 
     .dropdown-item:hover {
         background-color: #f8f8f8;
         text-decoration: none;
+    }
+
+/* Thêm style cho dropdown trigger để rõ ràng hơn */
+.dropdown > span {
+    display: inline-block;
+    padding: 4px 0;
+    position: relative;
+}
+
+    /* Optional: Thêm arrow indicator */
+    .dropdown > span::after {
+        content: '▼';
+        font-size: 8px;
+        margin-left: 4px;
+        opacity: 0.6;
     }
 
 .main-content {

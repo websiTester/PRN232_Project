@@ -262,5 +262,40 @@ namespace Frontend.Controllers
             
 
         }
+
+        //[ValidateAntiForgeryToken]
+        //[HttpPost]
+        //public async Task<IActionResult> Respond([FromForm] RespondDisputeDto form)
+        //{
+        //    try
+        //    {
+        //        if (form.Id <= 0 || string.IsNullOrWhiteSpace(form.Resolution))
+        //        {
+        //            TempData["Error"] = "Thiếu dữ liệu phản hồi.";
+        //            return RedirectToAction("Seller", "Dispute");
+        //        }
+
+        //        // Map Resolution -> status (không cho client tự gửi)
+        //        form.status = form.Resolution == "full-refund" ? "4" : "2";
+        //        form.SolvedDate = null; // Backend sẽ tự set nếu status == "4"
+
+        //        var res = await _apiClient.PostAsJsonAsync("disputes/respond", form);
+        //        if (!res.IsSuccessStatusCode)
+        //        {
+        //            var err = await res.Content.ReadAsStringAsync();
+        //            TempData["Error"] = $"Gửi phản hồi thất bại: {err}";
+        //            return RedirectToAction("Seller", "Dispute");
+        //        }
+
+        //        TempData["Success"] = "Đã gửi phản hồi thành công.";
+        //        return RedirectToAction("Seller", "Dispute");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Lỗi gửi phản hồi");
+        //        TempData["Error"] = "Đã xảy ra lỗi hệ thống.";
+        //        return RedirectToAction("Seller", "Dispute");
+        //    }
+        //}
     }
 }
