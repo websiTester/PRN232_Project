@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Frontend.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class ReviewController : Controller
     {
         private readonly ApiClientHelper _apiClient;
@@ -17,7 +17,7 @@ namespace Frontend.Controllers
             _apiClient = apiClient;
         }
 
-        [Authorize(Roles = "Seller")]
+        //[Authorize(Roles = "seller, supporter")]
         [HttpGet]
         public IActionResult LeaveReview(int orderId, int productId)
         {
@@ -29,7 +29,7 @@ namespace Frontend.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = "Seller")]
+        //[Authorize(Roles = "seller, supporter")]
         [HttpPost]
         public async Task<IActionResult> LeaveReview(SellerLeaveReviewViewModel model)
         {
@@ -60,7 +60,7 @@ namespace Frontend.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = "Buyer")]
+        [Authorize(Roles = "buyer")]
         [HttpGet]
         public async Task<IActionResult> ReceivedReviews()
         {
