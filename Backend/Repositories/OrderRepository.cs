@@ -46,5 +46,18 @@ namespace Backend.Repositories
                 .OrderByDescending(oi => oi.Order.OrderDate)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<OrderItem>> GetOrderItemsBySellerIdAsync(int sellerId)
+        {
+            return await _context.OrderItems
+                .Include(oi => oi.Order) // Lấy thông tin Order cha
+                    .ThenInclude(o => o.Buyer) // Từ Order -> lấy thông tin Buyer
+                .Include(oi => oi.Order) // Lấy thông tin Order cha (lần nữa)
+                    .ThenInclude(o => o.Feedbacks) // ✅ TỪ ORDER -> LẤY FEEDBACK LIÊN QUAN
+                .Include(oi => oi.Product) // Lấy thông tin Product (để check sellerId)
+                .Where(oi => oi.Product != null && oi.Product.SellerId == sellerId)
+                .OrderByDescending(oi => oi.Order.OrderDate)
+                .ToListAsync();
+        }
     }
 }

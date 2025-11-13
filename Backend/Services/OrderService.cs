@@ -81,5 +81,57 @@ namespace Backend.Services
 
             return dtos;
         }
+
+        public async Task<IEnumerable<SellerSalesOrderDto>> GetSalesHistoryAsync(string sellerUsername)
+        {
+            var user = await GetUserFromUsername(sellerUsername);
+            if (user == null || (user.Role != "Seller" && user.Role != "Supporter")) // Sửa logic role
+            {
+                return new List<SellerSalesOrderDto>();
+            }
+
+            var orderItems = await _orderRepository.GetOrderItemsBySellerIdAsync(user.Id);
+
+            // 1. Lấy tất cả feedback của seller này MỘT LẦN
+            //    (Giả định bạn đã thêm IFeedbackRepository, nếu không hãy dùng _context trực tiếp)
+            //    Ở đây tôi sẽ dùng cách JOIN từ OrderItems cho đúng
+
+            var groupedOrders = orderItems
+                .GroupBy(oi => oi.Order)
+                .Select(group =>
+                {
+                    var order = group.Key;
+
+                    // 2. Tìm feedback cho đơn hàng NÀY
+                    //    (Bảng Feedback có liên kết 1-1 với OrderTable, thông qua OrdersId)
+                    var feedback = order.Feedbacks.FirstOrDefault(); // Lấy feedback đầu tiên (nếu có)
+
+                    return new SellerSalesOrderDto
+                    {
+                        OrderId = order.Id,
+                        OrderDate = order.OrderDate,
+                        OrderStatus = order.Status,
+                        OrderTotalPrice = order.TotalPrice,
+
+                        BuyerId = order.BuyerId ?? 0,
+                        BuyerUsername = order.Buyer?.Username ?? "Unknown Buyer",
+
+                        Items = group.Select(oi => new SellerSalesItemDto
+                        {
+                            ProductId = oi.ProductId ?? 0,
+                            ProductTitle = oi.Product?.Title,
+                            Quantity = oi.Quantity ?? 0,
+                            UnitPrice = oi.UnitPrice
+                        }).ToList(),
+
+                        // 3. ĐIỀN DỮ LIỆU FEEDBACK
+                        HasBuyerFeedback = feedback != null,
+                        BuyerFeedbackId = feedback?.Id,
+                        BuyerFeedbackRating = feedback?.AverageRating
+                    };
+                });
+
+            return groupedOrders.ToList();
+        }
     }
 }

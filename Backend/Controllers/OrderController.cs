@@ -57,5 +57,30 @@ namespace Backend.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("seller/my-sales")]
+        [Authorize(Roles = "Seller")] // Chỉ cho phép Seller
+        public async Task<IActionResult> GetMySalesHistory()
+        {
+            try
+            {
+                // Dùng hàm có sẵn để lấy username từ token
+                var username = GetUsernameFromToken();
+
+                // Gọi service method mới
+                var history = await _orderService.GetSalesHistoryAsync(username);
+
+                return Ok(history);
+            }
+            catch (InvalidOperationException ex) // Lỗi từ GetUsernameFromToken
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi ex ở đây
+                return StatusCode(500, new { message = "Lỗi máy chủ nội bộ: " + ex.Message });
+            }
+        }
     }
 }
