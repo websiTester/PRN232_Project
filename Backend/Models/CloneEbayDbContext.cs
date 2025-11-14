@@ -264,26 +264,22 @@ public partial class CloneEbayDbContext : DbContext
                 .HasConstraintName("FK__Inventory__produ__6383C8BA");
         });
 
-        modelBuilder.Entity<Message>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Message__3213E83F7144CC1A");
+		modelBuilder.Entity<Message>(entity =>
+		{
+			entity.HasKey(e => e.Id);
 
-            entity.ToTable("Message");
+			entity.ToTable("Message");
 
-            entity.HasIndex(e => e.ProductId, "IX_Message_ProductId");
+			entity.Property(e => e.Id).HasColumnName("id");
+			entity.Property(e => e.Content).HasColumnName("content");
+			entity.Property(e => e.SenderId).HasColumnName("senderId");
+			entity.Property(e => e.ReceiverId).HasColumnName("receiverId");
+			entity.Property(e => e.Timestamp)
+				.HasColumnName("timestamp")
+				.HasColumnType("datetime");
+		});
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.ReceiverId).HasColumnName("receiverId");
-            entity.Property(e => e.SenderId).HasColumnName("senderId");
-            entity.Property(e => e.Timestamp)
-                .HasColumnType("datetime")
-                .HasColumnName("timestamp");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Messages).HasForeignKey(d => d.ProductId);
-        });
-
-        modelBuilder.Entity<OrderItem>(entity =>
+		modelBuilder.Entity<OrderItem>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__OrderIte__3213E83F7EC2808B");
 

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model List<SellerToBuyerReview>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -159,50 +160,35 @@
                 <div class="content-area">
                     <!-- Tiêu đề và bộ lọc (Tạm thời đơn giản) -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h5 fw-bold mb-0">All feedback (3)</h2>
+                        <h2 class="h5 fw-bold mb-0">All feedback (@Model.Count)</h2>
                         <!-- Có thể thêm bộ lọc thời gian ở đây -->
                     </div>
 
                     <!-- Danh sách feedback -->
                     <div class="feedback-list">
+                        @if (Model.Count == 0)
+                        {
+                            <p>No feedback found.</p>
+                        } else
+                        {
+                            @foreach (var feedback in Model)
+                            {
+                                <div class="feedback-item d-flex">
+                                    <i class="bi bi-patch-plus-fill feedback-icon"></i>
+                                    <div>
+                                        <p class="feedback-comment mb-0">"@feedback.Comment"</p>
+                                        <p class="feedback-meta mb-0">
+                                            Left buy <span class="buyer-id">@feedback.SellerName</span> on @feedback.CreatedAt
+                                            <a href="#" class="item-link">Item #@feedback.OrderId - @feedback.ProductName</a>
+                                        </p>
+                                    </div>
+                                </div>
 
-                        <!-- Mục feedback 1 -->
-                        <div class="feedback-item d-flex">
-                            <i class="bi bi-patch-plus-fill feedback-icon"></i>
-                            <div>
-                                <p class="feedback-comment mb-0">"Excellent buyer, paid quickly. Thank you! A+++"</p>
-                                <p class="feedback-meta mb-0">
-                                    Left for <span class="buyer-id">b***r (123)</span> on Nov 13, 2025 |
-                                    <a href="#" class="item-link">Item #214567890123</a>
-                                </p>
-                            </div>
-                        </div>
+                            }
 
-                        <!-- Mục feedback 2 -->
-                        <div class="feedback-item d-flex">
-                            <i class="bi bi-patch-plus-fill feedback-icon"></i>
-                            <div>
-                                <p class="feedback-comment mb-0">"Great communication. A pleasure to do business with."</p>
-                                <p class="feedback-meta mb-0">
-                                    Left for <span class="buyer-id">j***s (45)</span> on Nov 10, 2025 |
-                                    <a href="#" class="item-link">Item #112233445566</a>
-                                </p>
-                            </div>
-                        </div>
+                        }
 
-                        <!-- Mục feedback 3 -->
-                        <div class="feedback-item d-flex">
-                            <i class="bi bi-patch-plus-fill feedback-icon"></i>
-                            <div>
-                                <p class="feedback-comment mb-0">"Thank you for your purchase!"</p>
-                                <p class="feedback-meta mb-0">
-                                    Left for <span class="buyer-id">a***n (8)</span> on Nov 05, 2025 |
-                                    <a href="#" class="item-link">Item #778899001122</a>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
+                       </div>
                 </div>
             </div>
         </div>

@@ -19,7 +19,7 @@ namespace Backend.Controllers
 		public IActionResult GetSellerCommentByBuyerId(int? buyerId)
 		{
 			var sellerComment = _context.SellerToBuyerReviews.Where(sc => sc.BuyerId == buyerId).ToList();
-			return View(sellerComment);
+			return Ok(sellerComment);
 		}
 	}
 }
