@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace Frontend.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class ReviewController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -23,17 +23,17 @@ namespace Frontend.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        //private void AddAuthTokenToRequest()
-        //{
-        //    var token = _httpContextAccessor.HttpContext?.Session.GetString("JwtToken");
+        private void AddAuthTokenToRequest()
+        {
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("JwtToken");
 
-        //    _httpClient.DefaultRequestHeaders.Authorization = null;
-        //    if (!string.IsNullOrEmpty(token))
-        //    {
-        //        _httpClient.DefaultRequestHeaders.Authorization =
-        //            new AuthenticationHeaderValue("Bearer", token);
-        //    }
-        //}
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token);
+            }
+        }
 
         [HttpGet]
         public IActionResult LeaveReview(int orderId, int productId)
@@ -47,7 +47,7 @@ namespace Frontend.Controllers
         }
 
 
-        //[Authorize(Roles = "seller, supporter")]
+        [Authorize(Roles = "seller, supporter")]
         [HttpPost]
         public async Task<IActionResult> LeaveReview(SellerLeaveReviewViewModel model)
         {
@@ -58,7 +58,7 @@ namespace Frontend.Controllers
 
             try
             {
-                //AddAuthTokenToRequest();
+                AddAuthTokenToRequest();
 
                 var url = $"{_apiBaseUrl}/reviews/seller-to-buyer";
 
@@ -90,13 +90,13 @@ namespace Frontend.Controllers
             return View(model);
         }
 
-        //[Authorize(Roles = "buyer")]
+        [Authorize(Roles = "buyer")]
         [HttpGet]
         public async Task<IActionResult> ReceivedReviews()
         {
             try
             {
-                //AddAuthTokenToRequest();
+                AddAuthTokenToRequest();
 
                 var url = $"{_apiBaseUrl}/reviews/received";
 
