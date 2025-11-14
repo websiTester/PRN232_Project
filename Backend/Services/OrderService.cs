@@ -96,7 +96,8 @@ namespace Backend.Services
                     OrderStatus = order.Status,
 
                     // SỬA ĐỔI: Gán tên người bán thật
-                    SellerUsername = item.Product.Seller?.Username ?? "Unknown Seller"
+                    SellerUsername = item.Product.Seller?.Username ?? "Unknown Seller",
+                    SellerId = item.Product.Seller?.Id ?? 0
                 });
             }
 

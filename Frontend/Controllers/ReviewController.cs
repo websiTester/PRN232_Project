@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace Frontend.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class ReviewController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -47,7 +47,7 @@ namespace Frontend.Controllers
         }
 
 
-        [Authorize(Roles = "seller, supporter")]
+        //[Authorize(Roles = "seller, supporter")]
         [HttpPost]
         public async Task<IActionResult> LeaveReview(SellerLeaveReviewViewModel model)
         {
@@ -90,7 +90,7 @@ namespace Frontend.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = "buyer")]
+        //[Authorize(Roles = "buyer")]
         [HttpGet]
         public async Task<IActionResult> ReceivedReviews()
         {

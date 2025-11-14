@@ -14,5 +14,6 @@ namespace Backend.DTOs.Responses
         public string FeedbackState { get; set; } = "N/A";
         public string? OrderStatus { get; set; }
         public string? SellerUsername { get; set; }
+        public int? SellerId { get; set; }
     }
 }
