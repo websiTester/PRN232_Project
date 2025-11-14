@@ -8,6 +8,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -30,4 +31,13 @@ jobs:
 
     - name: Build Frontend
       run: dotnet build Frontend/Frontend.csproj --configuration Release --no-restore
+      
+    - name: Docker Compose Build
+      run: docker compose build
+    - name: Run Docker Compose
+      run: docker compose up -d --build
+
+      
+    - name: Stop Docker Compose
+      run: docker compose down
 

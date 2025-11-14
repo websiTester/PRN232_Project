@@ -1,8 +1,10 @@
+using Backend.Middleware;
 using Backend.Models;
 using Backend.ProgramConfig;
 using Backend.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 
 //docker-compose up --scale api=4 --build
@@ -45,6 +47,22 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddHostedService<DisputeEscalationService>();
 
+var logPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "logs", "log.json");
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "BackendAPI")
+    .WriteTo.Console(new Serilog.Formatting.Json.JsonFormatter())
+    .WriteTo.File(
+        new Serilog.Formatting.Json.JsonFormatter(),
+        logPath,
+        rollingInterval: RollingInterval.Day,      
+        retainedFileCountLimit: 14,                 
+        shared: true                                   
+    )
+    .CreateBootstrapLogger();
+
+builder.Host.UseSerilog();
 
 
 
@@ -61,7 +79,9 @@ app.UseCors("AllowSpecificOrigins");
 
 // Note: HTTPS redirection is disabled to keep the backend listening on http://localhost:5236
 // app.UseHttpsRedirection();
+app.UseMiddleware<CorrelationIdMiddleware>();
 
+app.UseSerilogRequestLogging();
 app.UseAuthentication();
 
 app.UseAuthorization();

@@ -17,6 +17,9 @@ namespace Frontend.Controllers
 
             // "Tiêm" token vào trang CSHTML
             ViewData["ApiToken"] = token;
+            var correlationId = HttpContext.TraceIdentifier;
+
+            ViewData["CorrelationId"] = correlationId;
 
             // Render trang Views/Dispute/Create.cshtml
             return View();

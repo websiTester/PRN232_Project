@@ -1,4 +1,6 @@
 using Frontend.Helpers;
+using Frontend.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,7 @@ if (!app.Environment.IsDevelopment())
     // Running frontend on HTTP for local development; do not redirect to HTTPS
 app.UseStaticFiles();
 app.UseRouting();
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseSession();
 
