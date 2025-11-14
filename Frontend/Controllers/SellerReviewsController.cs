@@ -41,7 +41,7 @@ namespace Frontend.Controllers
             {
                 OrderId = orderId
             };
-            return View(model);
+            return View("~/Views/Sales/LeaveReview.cshtml", model);
         }
 
         [HttpPost]
