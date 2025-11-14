@@ -41,7 +41,13 @@ namespace Backend.Repositories
         {
             return await _context.OrderItems
                 .Include(oi => oi.Product)
+                    .ThenInclude(p => p.Seller)
                 .Include(oi => oi.Order)
+                    .ThenInclude(o => o.Feedbacks)
+                .Include(oi => oi.Order)
+                    .ThenInclude(o => o.Disputes)
+                .Include(oi => oi.Order)
+                    .ThenInclude(o => o.ReturnRequests)
                 .Where(oi => oi.Order.BuyerId == buyerId)
                 .OrderByDescending(oi => oi.Order.OrderDate)
                 .ToListAsync();
@@ -50,11 +56,11 @@ namespace Backend.Repositories
         public async Task<IEnumerable<OrderItem>> GetOrderItemsBySellerIdAsync(int sellerId)
         {
             return await _context.OrderItems
-                .Include(oi => oi.Order) // Lấy thông tin Order cha
-                    .ThenInclude(o => o.Buyer) // Từ Order -> lấy thông tin Buyer
-                .Include(oi => oi.Order) // Lấy thông tin Order cha (lần nữa)
-                    .ThenInclude(o => o.Feedbacks) // ✅ TỪ ORDER -> LẤY FEEDBACK LIÊN QUAN
-                .Include(oi => oi.Product) // Lấy thông tin Product (để check sellerId)
+                .Include(oi => oi.Order)
+                    .ThenInclude(o => o.Buyer)
+                .Include(oi => oi.Order)
+                    .ThenInclude(o => o.Feedbacks)
+                .Include(oi => oi.Product)
                 .Where(oi => oi.Product != null && oi.Product.SellerId == sellerId)
                 .OrderByDescending(oi => oi.Order.OrderDate)
                 .ToListAsync();

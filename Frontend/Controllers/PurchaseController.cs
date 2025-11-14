@@ -35,7 +35,7 @@ namespace Frontend.Controllers
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return RedirectToAction("Login", "Auth");
+                    return Redirect("/Auth/Login");
                 }
 
                 _logger.LogError($"Lỗi API khi gọi order/my-history: {response.ReasonPhrase}");

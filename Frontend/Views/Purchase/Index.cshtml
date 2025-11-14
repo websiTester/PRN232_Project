@@ -1,7 +1,34 @@
 ﻿@model List<PurchaseHistoryItemDto>
+@using Frontend.Helpers
 @section Styles {
     <link rel="stylesheet" href="~/css/purchase-history.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/leave-review-modal.css" asp-append-version="true" />
+    <style>
+        /* CSS Thêm để phân biệt các trạng thái */
+        .feedback-state-text {
+            font-size: 0.9rem;
+            color: #555;
+            font-style: italic;
+            white-space: nowrap;
+        }
+
+            .feedback-state-text.dispute {
+                color: #d9534f; /* Màu đỏ cho tranh chấp */
+                font-weight: 600;
+            }
+
+        /* CSS Thêm cho Order Number */
+        .order-info-details {
+            display: flex;
+            gap: 1.5rem; /* Tăng khoảng cách một chút */
+        }
+
+        /* Đảm bảo mã đơn hàng không bị ngắt dòng */
+        .order-info-est .fw-bold {
+            white-space: nowrap;
+        }
+
+    </style>
 }
 @{
     ViewData["Title"] = "Purchases";
@@ -9,6 +36,7 @@
 
 <div class="container-fluid px-3 px-md-5 py-4">
 
+    @* ... (Phần my-ebay-header và sidebar giữ nguyên) ... *@
     <div class="my-ebay-header">
         <div class="my-ebay-title-nav">
             <h1 class="my-ebay-title">My eBay</h1>
@@ -50,6 +78,7 @@
         <div class="col-12 col-md-9 col-lg-10">
             <div class="purchase-history-content">
 
+                @* ... (Phần purchase-header và purchase-view-options giữ nguyên) ... *@
                 <div class="purchase-header">
                     <h2 class="purchase-title">Purchases</h2>
                     <form class="search-your-orders-form">
@@ -74,7 +103,6 @@
                     <li><a href="#" class="btn-filter-nav">Returns and cancelled orders</a></li>
                 </ul>
 
-
                 <div class="order-list">
                     @if (!Model.Any())
                     {
@@ -87,48 +115,85 @@
                     {
                         <div class="order-card">
                             <div class="order-card-header">
-                                <div class="order-info-est">
-                                    <span class="text-uppercase small-text">Order date:</span>
-                                    <span class="fw-bold">@item.OrderDate.ToString("dd-MMM-yyyy")</span>
-                                </div>
 
+                                @* ===== SỬA ĐỔI 1: HIỂN THỊ ORDER NUMBER ===== *@
+                                <div class="order-info-details">
+                                    <div class="order-info-est">
+                                        <span class="text-uppercase small-text">Order date:</span>
+                                        <span class="fw-bold">@item.OrderDate.ToString("dd-MMM-yyyy")</span>
+                                    </div>
+                                    <div class="order-info-est">
+                                        <span class="text-uppercase small-text">Order number:</span>
+
+                                        @* ===== SỬA ĐỔI: GỌI HÀM HELPER ===== *@
+                                        @* Hàm này sẽ tạo mã ngẫu nhiên nhất quán
+                                          Ví dụ: 101 -> X5T7-G3P1-Q9A2
+                                                 102 -> A9B2-L4K7-P8J1
+                                          (Và sẽ luôn là như vậy)
+                                        *@
+                                        <span class="fw-bold">@FormattingHelper.GenerateDisplayOrderNumber(item.OrderId)</span>
+                                    </div>
+                                </div>
+                                @* ====================================== *@
+
+
+                                @* Thanh trạng thái (giữ nguyên logic cũ) *@
+                                @{
+                                    bool isPaid = item.OrderStatus == "Completed" || item.OrderStatus == "Shipped";
+                                    bool isShipped = item.OrderStatus == "Completed" || item.OrderStatus == "Shipped";
+                                    bool isDelivered = item.OrderStatus == "Completed";
+                                }
                                 <div class="order-status-bar">
-                                    <div class="status-node active">
+                                    <div class="status-node @(isPaid ? "active" : "")">
                                         <div class="status-dot"></div>
                                         <span class="status-label">PAID</span>
                                     </div>
-                                    <div class="status-line active"></div>
-                                    <div class="status-node active">
+                                    <div class="status-line @(isShipped ? "active" : "")"></div>
+                                    <div class="status-node @(isShipped ? "active" : "")">
                                         <div class="status-dot"></div>
-                                        <span class="status-label">DISPATCHED</span>
+                                        <span class="status-label">SHIPPED</span>
                                     </div>
-                                    <div class="status-line active"></div>
-                                    <div class="status-node active">
+                                    <div class="status-line @(isDelivered ? "active" : "")"></div>
+                                    <div class="status-node @(isDelivered ? "active" : "")">
                                         <div class="status-dot"></div>
                                         <span class="status-label">DELIVERED</span>
                                     </div>
                                 </div>
 
                                 <div class="order-header-action">
-                                    @if (item.HasReviewed)
+                                    @* Logic trạng thái Feedback (giữ nguyên) *@
+                                    @switch (item.FeedbackState)
                                     {
-                                        <span class="feedback-left-text">Feedback left</span>
-                                    }
-                                    else
-                                    {
-                                        <form action="/feedback/FormFeedback" method="get">
-                                            <input type="hidden" name="id" value="@item.OrderId" />
-                                            <button type="submit"
-                                                    class="btn btn-primary btn-leave-feedback-main"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#leaveReviewModal"
-                                                    data-product-id="@item.ProductId"
-                                                    data-product-title="@item.ProductTitle"
-                                                    data-product-image="@item.ProductImage">
-                                                Leave Feedback
-                                            </button>
-                                        </form>
-                                        
+                                        case "ELIGIBLE":
+                                            <form action="/feedback/FormFeedback" method="get">
+                                                <input type="hidden" name="id" value="@item.OrderId" />
+                                                <button type="submit"
+                                                        class="btn btn-primary btn-leave-feedback-main"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#leaveReviewModal"
+                                                        data-product-id="@item.ProductId"
+                                                        data-product-title="@item.ProductTitle"
+                                                        data-product-image="@item.ProductImage">
+                                                    Leave Feedback
+                                                </button>
+                                            </form>
+                                            break;
+
+                                        case "SUBMITTED":
+                                            <span class="feedback-state-text">Feedback left</span>
+                                            break;
+
+                                        case "EXPIRED":
+                                            <span class="feedback-state-text">Feedback period ended</span>
+                                            break;
+
+                                        case "IN_DISPUTE":
+                                            <span class="feedback-state-text dispute">Action required</span>
+                                            break;
+
+                                        case "PENDING_DELIVERY":
+                                            <span class="feedback-state-text">Order processing</span>
+                                            break;
                                     }
                                 </div>
                             </div>
@@ -144,12 +209,20 @@
                                         <span class="fw-bold">US $@item.UnitPrice?.ToString("#,##0.00")</span>
                                         <span class="text-muted small-text"> | Free postage</span>
                                     </p>
-                                    <p class="text-muted small-text mb-2">Item ID: (N/A)</p>
+
+                                    @* ===== SỬA ĐỔI 2: HIỂN THỊ ITEM ID ===== *@
+                                    <p class="text-muted small-text mb-2">Item ID: @item.ProductId</p>
+                                    @* ====================================== *@
+
                                     <a href="#" class="small-text">Add note</a>
                                 </div>
                                 <div class="order-seller-info">
                                     <p class="small-text mb-1">SELLER:</p>
-                                    <a href="/feedback/OverviewFeedback" class="seller-username">seller_username</a>
+
+                                    @* ===== SỬA ĐỔI 3: HIỂN THỊ SELLER NAME ===== *@
+                                    <a href="/feedback/OverviewFeedback" class="seller-username">@item.SellerUsername</a>
+                                    @* ======================================== *@
+
                                     <p class="text-muted small-text mb-0">(12345)</p>
                                     <p class="text-muted small-text">99.6% positive Feedback</p>
                                 </div>
@@ -173,19 +246,16 @@
     </div>
 </div>
 
-<!-- ✅ MODAL POPUP: Leave Review -->
+@* ... (Modal và phần Scripts giữ nguyên) ... *@
 <div class="modal fade" id="leaveReviewModal" tabindex="-1" aria-labelledby="leaveReviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content leave-review-modal-content">
-            <!-- Modal Header -->
             <div class="modal-header border-bottom">
                 <h5 class="modal-title fw-bold" id="leaveReviewModalLabel">Leave feedback</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <!-- Modal Body -->
             <div class="modal-body p-4">
-                <!-- Product Info Header -->
                 <div class="product-info-section mb-4">
                     <div class="d-flex align-items-start gap-3">
                         <img src="" alt="" class="product-thumbnail" id="modalProductImage" />
@@ -198,13 +268,11 @@
 
                 <hr class="my-4" />
 
-                <!-- Leave Review Form -->
                 <form id="reviewForm" asp-controller="Purchase" asp-action="LeaveReview" method="post">
                     <input type="hidden" name="ProductId" id="modalProductId" />
                     <input type="hidden" name="ProductTitle" id="modalProductTitleHidden" />
                     <input type="hidden" name="ProductImage" id="modalProductImageHidden" />
 
-                    <!-- Section 1: Star Rating (REQUIRED) -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold d-flex align-items-center gap-2">
                             Rate this item
@@ -212,7 +280,6 @@
                         </label>
                         <span class="text-danger d-block small mb-2" id="ratingError" style="display: none;">Please select a rating</span>
 
-                        <!-- Star Rating -->
                         <div class="star-rating-container">
                             <div class="star-rating">
                                 <input type="radio" id="star5" name="Rating" value="5" />
@@ -234,7 +301,6 @@
                         </div>
                     </div>
 
-                    <!-- Section 2: Written Comment -->
                     <div class="mb-4">
                         <label for="commentTextarea" class="form-label fw-semibold">
                             Tell us more about your experience <span class="text-muted small">(Optional)</span>
@@ -251,7 +317,6 @@
                         </div>
                     </div>
 
-                    <!-- Section 3: Add Photos Placeholder -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold">
                             Add photos <span class="text-muted small">(Optional)</span>
@@ -269,12 +334,10 @@
                         </div>
                     </div>
 
-                    <!-- Helper Text -->
                     <p class="small text-muted text-center mb-3">
                         Your review will be visible to other shoppers
                     </p>
 
-                    <!-- Action Buttons -->
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-leave-feedback">
                             Leave feedback
@@ -308,7 +371,7 @@
             const ratingError = document.getElementById('ratingError');
 
             // Populate modal with product data when button is clicked
-            modal.addEventListener('show.bs.modal', function (event) {
+            modal.addEventListener('show.bs.modal', function(event) {
                 console.log('Modal is opening...');
 
                 const button = event.relatedTarget;
@@ -368,7 +431,7 @@
                         }
                     });
                 });
-                Q
+
                 label.addEventListener('mouseleave', function() {
                     starLabels.forEach(l => {
                         l.style.transform = 'scale(1)';
