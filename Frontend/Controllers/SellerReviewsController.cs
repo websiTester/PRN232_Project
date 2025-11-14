@@ -9,15 +9,14 @@ using System.Text.Json;
 
 namespace Frontend.Controllers
 {
-    //[Authorize]
-    public class ReviewController : Controller
+    public class SellerReviewsController : Controller
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         private readonly string _apiBaseUrl = "http://localhost:5236/api";
 
-        public ReviewController(IHttpClientFactory factory, IHttpContextAccessor httpContextAccessor)
+        public SellerReviewsController(IHttpClientFactory factory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = factory.CreateClient();
             _httpContextAccessor = httpContextAccessor;
@@ -36,18 +35,15 @@ namespace Frontend.Controllers
         }
 
         [HttpGet]
-        public IActionResult LeaveReview(int orderId, int productId)
+        public IActionResult LeaveReview(int orderId)
         {
             var model = new SellerLeaveReviewViewModel
             {
-                OrderId = orderId,
-                ProductId = productId
+                OrderId = orderId
             };
             return View(model);
         }
 
-
-        //[Authorize(Roles = "seller, supporter")]
         [HttpPost]
         public async Task<IActionResult> LeaveReview(SellerLeaveReviewViewModel model)
         {
@@ -60,27 +56,19 @@ namespace Frontend.Controllers
             {
                 AddAuthTokenToRequest();
 
-                var url = $"{_apiBaseUrl}/reviews/seller-to-buyer";
+                var url = $"{_apiBaseUrl}/seller-reviews";
 
-                var response = await _httpClient.PostAsJsonAsync(url, model);
+                var dto = new { OrderId = model.OrderId, Comment = model.Comment };
+
+                var response = await _httpClient.PostAsJsonAsync(url, dto);
 
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Review saved successfully!";
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Sales");
                 }
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // 401
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid or missing token. Please log in again.");
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden) // 403
-                {
-                    ModelState.AddModelError(string.Empty, "You do not have permission.");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, $"An unexpected error occurred. Status code: {response.StatusCode}");
-                }
+
+                ModelState.AddModelError(string.Empty, "An error occurred.");
             }
             catch (Exception ex)
             {
@@ -90,15 +78,14 @@ namespace Frontend.Controllers
             return View(model);
         }
 
-        //[Authorize(Roles = "buyer")]
         [HttpGet]
-        public async Task<IActionResult> ReceivedReviews()
+        public async Task<IActionResult> Received()
         {
             try
             {
                 AddAuthTokenToRequest();
 
-                var url = $"{_apiBaseUrl}/reviews/received";
+                var url = $"{_apiBaseUrl}/seller-reviews/received-as-buyer";
 
                 var response = await _httpClient.GetAsync(url);
 
@@ -113,15 +100,7 @@ namespace Frontend.Controllers
                     return View(reviews);
                 }
 
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    ViewData["ErrorMessage"] = "You are not authorized to view this page.";
-                }
-                else
-                {
-                    ViewData["ErrorMessage"] = "Failed to load reviews.";
-                }
-
+                ViewData["ErrorMessage"] = "Failed to load reviews.";
                 return View(new List<ReviewsViewModel>());
             }
             catch (Exception ex)

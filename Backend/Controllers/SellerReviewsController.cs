@@ -1,6 +1,6 @@
 ﻿using Backend.DTOs.Requests;
 using Backend.DTOs.Responses;
-using Backend.Services;
+using Backend.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +8,18 @@ using System.Security.Claims;
 
 namespace Backend.Controllers
 {
-    [Route("api/reviews")]
+    [Route("api/seller-reviews")]
     [ApiController]
-    public class ReviewsController : ControllerBase
+    public class SellerReviewsController : ControllerBase
     {
-        private readonly IReviewService2 _reviewService;
+        private readonly ISellerToBuyerReviewService _reviewService;
 
-        public ReviewsController(IReviewService2 reviewService)
+        public SellerReviewsController(ISellerToBuyerReviewService reviewService)
         {
             _reviewService = reviewService;
         }
 
-        [HttpPost("seller-to-buyer")]
+        [HttpPost]
         [Authorize(Roles = "seller")]
         public async Task<IActionResult> CreateSellerReview([FromBody] SellerReviewCreateDto reviewDto)
         {
@@ -30,22 +30,11 @@ namespace Backend.Controllers
                 {
                     return Unauthorized("User not found.");
                 }
-
                 var sellerId = int.Parse(sellerIdStr);
 
                 var newReview = await _reviewService.CreateSellerReviewAsync(sellerId, reviewDto);
 
-                var reviewResponse = new ReviewResponseDto
-                {
-                    Id = newReview.Id,
-                    ProductId = newReview.ProductId,
-                    ReviewerId = newReview.ReviewerId,
-                    Rating = newReview.Rating,
-                    Comment = newReview.Comment,
-                    CreatedAt = newReview.CreatedAt
-                };
-
-                return Ok(reviewResponse);
+                return Ok(newReview);
             }
             catch (Exception ex)
             {
@@ -53,7 +42,7 @@ namespace Backend.Controllers
             }
         }
 
-        [HttpGet("received")]
+        [HttpGet("received-as-buyer")]
         [Authorize(Roles = "buyer")]
         public async Task<IActionResult> GetReviewsReceivedByBuyer()
         {
@@ -64,22 +53,11 @@ namespace Backend.Controllers
                 {
                     return Unauthorized("User not found.");
                 }
-
                 var buyerId = int.Parse(buyerIdStr);
 
-                var reviews = await _reviewService.GetReviewsForBuyerAsync(buyerId);
+                var reviews = await _reviewService.GetReviewsReceivedByBuyerAsync(buyerId);
 
-                var reviewResponses = reviews.Select(r => new ReviewResponseDto
-                {
-                    Id = r.Id,
-                    ProductId = r.ProductId,
-                    ReviewerId = r.ReviewerId,
-                    Rating = r.Rating,
-                    Comment = r.Comment,
-                    CreatedAt = r.CreatedAt
-                });
-
-                return Ok(reviewResponses);
+                return Ok(reviews);
             }
             catch (Exception ex)
             {
