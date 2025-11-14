@@ -1,7 +1,8 @@
 ﻿using Backend.DTOs.Responses;
 using Backend.Models;
 using Backend.Repositories;
-// using Microsoft.EntityFrameworkCore; // <-- XÓA BỎ using này
+using System;
+using System.Linq;
 
 namespace Backend.Services
 {
@@ -9,25 +10,17 @@ namespace Backend.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
-        // SỬA: Dùng Interface
         private readonly IUserRepository _userRepository;
-        // THÊM: Cần IReviewRepository để kiểm tra
-        private readonly IReviewRepository _reviewRepository;
-        // private readonly CloneEbayDbContext _context; // <-- XÓA BỎ DbContext
 
         public OrderService(
             IOrderRepository orderRepository,
             IProductRepository productRepository,
-            IUserRepository userRepository, // <-- SỬA: Inject interface
-            IReviewRepository reviewRepository // <-- THÊM: Inject interface
-                                               // CloneEbayDbContext context) // <-- XÓA
+            IUserRepository userRepository
         )
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _userRepository = userRepository;
-            _reviewRepository = reviewRepository; // <-- THÊM
-            // _context = context; // <-- XÓA
         }
 
         private async Task<User?> GetUserFromUsername(string username)
@@ -58,24 +51,52 @@ namespace Backend.Services
             var orderItems = await _orderRepository.GetPurchaseHistoryAsync(user.Id);
 
             var dtos = new List<PurchaseHistoryItemDto>();
+            var now = DateTime.UtcNow;
 
             foreach (var item in orderItems)
             {
                 if (item.Product == null || item.Order == null) continue;
 
-                // SỬA: Dùng Repository, không dùng DbContext trực tiếp
-                bool hasReviewed = await _reviewRepository.HasUserReviewedProductAsync(user.Id, item.Product.Id);
+                var order = item.Order;
+                string feedbackState;
+
+                if (order.Feedbacks.Any())
+                {
+                    feedbackState = "SUBMITTED";
+                }
+                else if (order.Disputes.Any(d => d.Status == "Pending") ||
+                         order.ReturnRequests.Any(r => r.Status == "Pending"))
+                {
+                    feedbackState = "IN_DISPUTE";
+                }
+                else if (order.Status != "Completed")
+                {
+                    feedbackState = "PENDING_DELIVERY";
+                }
+                else if ((now - (order.OrderDate ?? now.AddDays(-100))).TotalDays > 60)
+                {
+                    feedbackState = "EXPIRED";
+                }
+                else
+                {
+                    feedbackState = "ELIGIBLE";
+                }
 
                 dtos.Add(new PurchaseHistoryItemDto
                 {
                     OrderItemId = item.Id,
                     OrderId = item.OrderId ?? 0,
-                    ProductId = item.Product.Id,
+                    ProductId = item.Product.Id, // Đã có sẵn
                     ProductTitle = item.Product.Title,
                     ProductImage = item.Product.Images,
                     UnitPrice = item.UnitPrice,
                     OrderDate = item.Order.OrderDate ?? DateTime.MinValue,
-                    HasReviewed = hasReviewed
+
+                    FeedbackState = feedbackState,
+                    OrderStatus = order.Status,
+
+                    // SỬA ĐỔI: Gán tên người bán thật
+                    SellerUsername = item.Product.Seller?.Username ?? "Unknown Seller"
                 });
             }
 
@@ -85,26 +106,19 @@ namespace Backend.Services
         public async Task<IEnumerable<SellerSalesOrderDto>> GetSalesHistoryAsync(string sellerUsername)
         {
             var user = await GetUserFromUsername(sellerUsername);
-            if (user == null || (user.Role != "seller" && user.Role != "supporter")) // Sửa logic role
+            if (user == null || (user.Role != "seller" && user.Role != "supporter"))
             {
                 return new List<SellerSalesOrderDto>();
             }
 
             var orderItems = await _orderRepository.GetOrderItemsBySellerIdAsync(user.Id);
 
-            // 1. Lấy tất cả feedback của seller này MỘT LẦN
-            //    (Giả định bạn đã thêm IFeedbackRepository, nếu không hãy dùng _context trực tiếp)
-            //    Ở đây tôi sẽ dùng cách JOIN từ OrderItems cho đúng
-
             var groupedOrders = orderItems
                 .GroupBy(oi => oi.Order)
                 .Select(group =>
                 {
                     var order = group.Key;
-
-                    // 2. Tìm feedback cho đơn hàng NÀY
-                    //    (Bảng Feedback có liên kết 1-1 với OrderTable, thông qua OrdersId)
-                    var feedback = order.Feedbacks.FirstOrDefault(); // Lấy feedback đầu tiên (nếu có)
+                    var feedback = order.Feedbacks.FirstOrDefault();
 
                     return new SellerSalesOrderDto
                     {
@@ -124,7 +138,6 @@ namespace Backend.Services
                             UnitPrice = oi.UnitPrice
                         }).ToList(),
 
-                        // 3. ĐIỀN DỮ LIỆU FEEDBACK
                         HasBuyerFeedback = feedback != null,
                         BuyerFeedbackId = feedback?.Id,
                         BuyerFeedbackRating = feedback?.AverageRating

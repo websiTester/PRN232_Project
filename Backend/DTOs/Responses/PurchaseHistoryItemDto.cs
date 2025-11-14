@@ -1,4 +1,6 @@
-﻿namespace Backend.DTOs.Responses
+﻿using System;
+
+namespace Backend.DTOs.Responses
 {
     public class PurchaseHistoryItemDto
     {
@@ -9,6 +11,8 @@
         public string? ProductImage { get; set; }
         public decimal? UnitPrice { get; set; }
         public DateTime OrderDate { get; set; }
-        public bool HasReviewed { get; set; }
+        public string FeedbackState { get; set; } = "N/A";
+        public string? OrderStatus { get; set; }
+        public string? SellerUsername { get; set; }
     }
 }
