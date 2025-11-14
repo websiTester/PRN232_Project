@@ -7,10 +7,11 @@ namespace Backend.Repositories
     public class DisputeRepository : IDisputeRepository
     {
         private readonly CloneEbayDbContext _context;
-
-        public DisputeRepository(CloneEbayDbContext context)
+        private readonly ILogger<DisputeRepository> _logger;
+        public DisputeRepository(CloneEbayDbContext context, ILogger<DisputeRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<DisputeListItemDto>> GetDisputesByBuyerAsync(int buyerId)
@@ -180,14 +181,25 @@ namespace Backend.Repositories
             return result;
         }
 
-        public async Task RespondDispute(RespondDisputeDto respond)
+        public void RespondDispute(RespondDisputeDto respond)
         {
-            var dispute = await _context.Disputes.Where(d => d.Id == respond.Id).FirstOrDefaultAsync();
+            var dispute = _context.Disputes.Where(x => x.Id == respond.Id).FirstOrDefault();
+
+            if (dispute == null)
+                throw new Exception("Không tìm thấy khiếu nại");
+
+            _logger.LogInformation("Trước update: {@Before}", dispute);
+            _logger.LogInformation("DTO nhận vào: {@Dto}", respond);
+
             dispute.Resolution = respond.Resolution;
             dispute.Comment = respond.Comment;
-            dispute.SolvedDate = respond.SolvedDate;
-            dispute.Status = respond.status;
-            await _context.SaveChangesAsync();
+            dispute.Status = respond.status;        // OK vì DB string
+            dispute.SolvedDate = DateTime.Now;
+
+            // KHÔNG gọi Update() - đã tracking rồi
+            var affected =  _context.SaveChangesAsync();
+
+            _logger.LogInformation("SaveChangesAsync affected rows = {Count}", affected);
         }
 
         public async Task AutoEscalateDisputesAsync(int daysToEscalate)

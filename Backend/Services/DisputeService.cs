@@ -27,7 +27,7 @@ namespace Backend.Services
             return _repository.GetDisputesForSupporterAsync();
         }
 
-        public async Task RespondDisputeAsync(RespondDisputeDto respond)
+        public void RespondDisputeAsync(RespondDisputeDto respond)
         {
             _repository.RespondDispute (respond);
         }

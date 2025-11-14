@@ -349,72 +349,133 @@
 
 
 
-            <!-- ===== MODAL PHẢN HỒI (CHO NÚT "PHẢN HỒI NGAY") ===== -->
+        <!-- ===== MODAL PHẢN HỒI (CHO NÚT "PHẢN HỒI NGAY") ===== -->
         <div id="respondModal"
-                 class="modal-base fixed inset-0 bg-black/50 hidden items-center justify-center z-[9999] p-4">
-            <!-- Nội dung modal -->
+             class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[9999] p-4">
+
             <div class="modal-content bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden">
-            
-                <!-- Body -->
-                <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
-                    <!-- Tóm tắt khiếu nại -->
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <p class="text-sm font-medium text-gray-500">Người mua <strong id="respond-buyer" class="text-gray-800"></strong> yêu cầu:</p>
+
+                <!-- FORM GỬI VỀ CONTROLLER -->
+                <form asp-controller="Dispute"
+                      asp-action="Respond"
+                      method="post"
+                      id="respondForm">
+
+                    @* nếu dùng antiforgery *@
+                    @Html.AntiForgeryToken()
+
+                    <!-- Body -->
+                    <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+
+                        <!-- Id Dispute (ẩn) -->
+                        <input type="hidden" id="DisputeId" name="Id" />
+                        <input type="hidden" name="status" value="2"/>
+                        <input type="hidden" name="SellerId" value="@sellerId" />
+                        <!-- Tóm tắt khiếu nại -->
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <p class="text-sm font-medium text-gray-500">
+                                Người mua <strong id="respond-buyer" class="text-gray-800"></strong> yêu cầu:
+                            </p>
                             <p id="respond-resolution" class="text-lg font-semibold text-red-600"></p>
-                        <p class="text-sm text-gray-700 mt-2">Chi tiết:</p>
-                            <p id="respond-combined-details" class="text-sm text-gray-600 italic border-l-4 border-gray-300 pl-3 py-1"></p>
-                    </div>
-                
-                    <!-- Lựa chọn hành động -->
-                    <div>
-                        <label class="text-base font-semibold text-gray-900">Chọn hành động của bạn</label>
-                        <fieldset class="mt-4">
-                            <legend class="sr-only">Hành động giải quyết</legend>
-                            <div class="space-y-4">
-                                <label for="action-accept-return" class="flex items-start p-4 border border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
-                                    <input id="action-accept-return" name="response-action" type="radio" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 mt-1">
-                                    <div class="ml-3 text-sm">
-                                        <span class="font-medium text-gray-900">Chấp nhận trả hàng</span>
-                                        <p class="text-gray-500">Bạn sẽ cung cấp nhãn trả hàng. Bạn sẽ hoàn tiền sau khi nhận lại hàng.</p>
-                                    </div>
-                                </label>
-                                <label for="action-full-refund" class="flex items-start p-4 border border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
-                                    <input id="action-full-refund" name="response-action" type="radio" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 mt-1">
-                                    <div class="ml-3 text-sm">
-                                        <span class="font-medium text-gray-900">Hoàn tiền toàn bộ</span>
-                                        <p class="text-gray-500">Người mua sẽ được hoàn tiền ngay và không cần trả lại hàng.</p>
-                                    </div>
-                                </label>
-                                <label for="action-partial-refund" class="flex items-start p-4 border border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
-                                    <input id="action-partial-refund" name="response-action" type="radio" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 mt-1">
-                                    <div class="ml-3 text-sm">
-                                        <span class="font-medium text-gray-900">Hoàn tiền một phần</span>
-                                        <p class="text-gray-500">Đề xuất một số tiền (bạn nhập bên dưới) để giải quyết dứt điểm.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </fieldset>
+
+                            <p class="text-sm text-gray-700 mt-2">Chi tiết:</p>
+                            <p id="respond-combined-details"
+                               class="text-sm text-gray-600 italic border-l-4 border-gray-300 pl-3 py-1"></p>
+                        </div>
+
+                        <!-- Lựa chọn hành động -->
+                        <div>
+                            <label class="text-base font-semibold text-gray-900">Chọn hành động của bạn</label>
+                            <fieldset class="mt-4">
+                                <legend class="sr-only">Hành động giải quyết</legend>
+                                <div class="space-y-4">
+
+                                    <label for="action-accept-return"
+                                           class="flex items-start p-4 border border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
+                                        <input id="action-accept-return"
+                                               name="Resolution"
+                                               value="Chấp nhận trả hàng"
+                                               type="radio"
+                                               class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 mt-1">
+                                        <div class="ml-3 text-sm">
+                                            <span class="font-medium text-gray-900">Chấp nhận trả hàng</span>
+                                            <p class="text-gray-500">
+                                                Bạn sẽ cung cấp nhãn trả hàng. Bạn sẽ hoàn tiền sau khi nhận lại hàng.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <label for="action-full-refund"
+                                           class="flex items-start p-4 border border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
+                                        <input id="action-full-refund"
+                                               name="Resolution"
+                                               value="Hoàn tiền toàn bộ"
+                                               type="radio"
+                                               class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 mt-1">
+                                        <div class="ml-3 text-sm">
+                                            <span class="font-medium text-gray-900">Hoàn tiền toàn bộ</span>
+                                            <p class="text-gray-500">
+                                                Người mua sẽ được hoàn tiền ngay và không cần trả lại hàng.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <label for="action-partial-refund"
+                                           class="flex items-start p-4 border border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
+                                        <input id="action-partial-refund"
+                                               name="Resolution"
+                                               value="Hoàn tiền một phần"
+                                               type="radio"
+                                               class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 mt-1">
+                                        <div class="ml-3 text-sm">
+                                            <span class="font-medium text-gray-900">Hoàn tiền một phần</span>
+                                            <p class="text-gray-500">
+                                                Đề xuất một số tiền (bạn nhập bên dưới) để giải quyết dứt điểm.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <!-- Ô nhập comment -->
+                        <div class="space-y-2">
+                            <label for="respond-message" class="text-sm font-medium text-gray-700">
+                                Chi tiết phản hồi / Tin nhắn cho người mua (Không bắt buộc)
+                            </label>
+                            <textarea id="respond-message"
+                                      name="Comment"
+                                      rows="4"
+                                      class="mt-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
+                                      placeholder="Ví dụ: Chúng tôi rất xin lỗi về sự cố này..."></textarea>
+                        </div>
                     </div>
 
-                    <!-- Ô nhập liệu -->
-                    <div class="space-y-2">
-                        <label for="respond-message" class="text-sm font-medium text-gray-700">Chi tiết phản hồi / Tin nhắn cho người mua (Không bắt buộc)</label>
-                        <textarea id="respond-message" name="respond-message" rows="4" class="mt-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2" placeholder="Ví dụ: Chúng tôi rất xin lỗi về sự cố này..."></textarea>
+                    <!-- Footer -->
+                    <div class="flex items-center justify-end p-5 border-t border-gray-200 space-x-3">
+                        <button type="button"
+                                class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                onclick="closeRespondModal()">
+                            Hủy
+                        </button>
+
+                        <button type="submit"
+                                class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                            Gửi phản hồi
+                        </button>
                     </div>
-                </div>
-                <!-- Footer -->
-                <div class="flex items-center justify-end p-5 border-t border-gray-200 space-x-3">
-                    <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200" onclick="closeRespondModal()">Hủy</button>
-                    <button type="button" id="respond-submit" class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300">Gửi phản hồi</button>
-                </div>
+                </form>
             </div>
         </div>
         <!-- ===== KẾT THÚC MODAL PHẢN HỒI ===== -->
+
+
         <script>
+            /* ========== MODAL XEM CHI TIẾT KHIẾU NẠI ========== */
             function openDisputeModal(btn) {
                 const modal = document.getElementById("disputeModal");
 
-                // Lấy dữ liệu từ nút
                 const data = {
                     order: btn.getAttribute("data-order") || "",
                     mainReason: btn.getAttribute("data-mainreason") || "",
@@ -426,38 +487,36 @@
                     responseComment: btn.getAttribute("data-response-comment") || ""
                 };
 
-                // ----- Mapping TRỰC TIẾP (không dùng function) -----
-
-                // Badge trạng thái: text + class
-                // Nếu bạn muốn hiển thị đúng raw status (1/2/3/4) thì dùng statusText = data.status;
-                // Còn dưới đây là map nhanh trong hàm:
                 const statusMap = {
                     "1": { text: "Chưa phản hồi", cls: "border-red-300 bg-red-50 text-red-700" },
                     "2": { text: "Đã phản hồi",    cls: "border-yellow-300 bg-yellow-50 text-yellow-700" },
-                    "3": { text: "Chưa phản hồi",          cls: "border-orange-300 bg-orange-50 text-orange-700" },
-                    "4": { text: "Đã phản hồi",                cls: "border-green-300 bg-green-50 text-green-700" }
+                    "3": { text: "Chưa phản hồi",  cls: "border-orange-300 bg-orange-50 text-orange-700" },
+                    "4": { text: "Đã phản hồi",    cls: "border-green-300 bg-green-50 text-green-700" }
                 };
-                const status = statusMap[data.status] || { text: (data.status || "Không rõ"), cls: "border-gray-300 bg-gray-50 text-gray-700" };
+                const status = statusMap[data.status] || {
+                    text: (data.status || "Không rõ"),
+                    cls: "border-gray-300 bg-gray-50 text-gray-700"
+                };
 
-                // Lý do chính: nếu không cần map ra tiếng Việt, hiển thị raw; nếu trống thì "Khiếu nại"
                 const mainReasonLabel = data.mainReason || "Khiếu nại";
 
-                // ----- Đổ dữ liệu vào modal -----
                 document.getElementById("modal-order").textContent = data.order;
                 document.getElementById("modal-mainreason").textContent = mainReasonLabel;
                 document.getElementById("modal-resolution").textContent = data.resolution;
 
                 const statusEl = document.getElementById("modal-status");
                 statusEl.textContent = status.text;
-                statusEl.className = "inline-block px-3 py-1 text-xs font-medium rounded-full border " + status.cls;
+                statusEl.className =
+                    "inline-block px-3 py-1 text-xs font-medium rounded-full border " + status.cls;
 
                 document.getElementById("modal-detailreason").textContent = data.detailReason || "—";
                 document.getElementById("modal-usercontent").textContent  = data.userContent  || "—";
 
-                document.getElementById("modal-seller-response-type").textContent   = data.responseResolution || "Chưa có phản hồi";
-                document.getElementById("modal-seller-response-detail").textContent = data.responseComment   || "Chưa có phản hồi";
+                document.getElementById("modal-seller-response-type").textContent   =
+                    data.responseResolution || "Chưa có phản hồi";
+                document.getElementById("modal-seller-response-detail").textContent =
+                    data.responseComment   || "Chưa có phản hồi";
 
-                // Hiển thị modal
                 modal.classList.remove("hidden");
                 modal.classList.add("flex");
             }
@@ -468,95 +527,110 @@
                 modal.classList.remove("flex");
             }
 
-            // Đóng bằng ESC & click overlay
-            window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDisputeModal(); });
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") closeDisputeModal();
+            });
             document.getElementById("disputeModal").addEventListener("click", (e) => {
                 if (e.target.id === "disputeModal") closeDisputeModal();
             });
 
 
-
-            // <!-- ======= Logic respond modal ====== -->
+            /* ========== MODAL PHẢN HỒI KHIẾU NẠI ========== */
             function openRespondModal(btn) {
-              const modal = document.getElementById("respondModal");
+                const modal = document.getElementById("respondModal");
 
-              // Lấy dữ liệu từ data-attributes
-              modal.dataset.disputeId = btn.getAttribute("data-id") || "";
-              const order               = btn.getAttribute("data-order") || "—";
-              const mainReason          = btn.getAttribute("data-mainreason") || "—";
-              const resolution          = btn.getAttribute("data-resolution") || "—";
-              const detailReason        = btn.getAttribute("data-detailreason") || "—";
-              const userContent         = btn.getAttribute("data-usercontent") || "";
-              const buyerName           = btn.getAttribute("data-buyername") || "—";
-              const responseResolution  = btn.getAttribute("data-response-resolution") || "—";
-              const responseComment     = btn.getAttribute("data-response-comment") || "—";
+                const disputeId         = btn.getAttribute("data-id") || "";
+                const order             = btn.getAttribute("data-order") || "—";
+                const mainReason        = btn.getAttribute("data-mainreason") || "—";
+                const resolution        = btn.getAttribute("data-resolution") || "—";
+                const detailReason      = btn.getAttribute("data-detailreason") || "—";
+                const userContent       = btn.getAttribute("data-usercontent") || "";
+                const buyerName         = btn.getAttribute("data-buyername") || "—";
+                const responseResolution= btn.getAttribute("data-response-resolution") || "—";
+                const responseComment   = btn.getAttribute("data-response-comment") || "—";
 
-              // ===== Gộp Chi tiết lí do + Nội dung bổ sung vào một ô =====
-              const combinedDetailsEl = document.getElementById("respond-combined-details");
-              if (combinedDetailsEl) {
-                // 1) Luôn hiển thị Chi tiết lý do (in đậm)
-                let html = `<span class="font-semibold text-gray-900 whitespace-pre-line">${escapeHtml(detailReason)}</span>`;
-
-                // 2) Thêm "Nội dung bổ sung" nếu có và KHÁC với chi tiết lý do
-                const uc = (userContent || "").trim();
-                const dr = (detailReason || "").trim();
-                if (uc && uc !== "..." && uc !== dr) {
-                  html += `
-                    <span class="block text-gray-700 pt-2 mt-2 border-t border-gray-200">
-                      ${escapeHtml(uc)}
-                    </span>`;
+                // gán id vào hidden input
+                const idInput = document.getElementById("DisputeId");
+                if (idInput) {
+                    idInput.value = disputeId;
                 }
-                combinedDetailsEl.innerHTML = html;
-              }
 
-              // Gán dữ liệu vào các phần tử trong modal (nếu có phần tử tương ứng)
-              setText("respond-buyer", buyerName);
-              setText("respond-mainreason", mainReason);
-              // Nếu đã gộp, có thể bỏ dòng dưới; nếu bạn vẫn giữ ô cũ thì set luôn:
-              setText("respond-detailreason", detailReason);
+                // gộp chi tiết lý do + nội dung bổ sung
+                const combinedDetailsEl = document.getElementById("respond-combined-details");
+                if (combinedDetailsEl) {
+                    let html = `<span class="font-semibold text-gray-900 whitespace-pre-line">${escapeHtml(detailReason)}</span>`;
+                    const uc = (userContent || "").trim();
+                    const dr = (detailReason || "").trim();
+                    if (uc && uc !== "..." && uc !== dr) {
+                        html += `
+                            <span class="block text-gray-700 pt-2 mt-2 border-t border-gray-200">
+                              ${escapeHtml(uc)}
+                            </span>`;
+                    }
+                    combinedDetailsEl.innerHTML = html;
+                }
 
-              setText("respond-resolution", resolution);
-              setText("respond-usercontent", userContent || "—");
-              // Nếu bạn có ô hiển thị phản hồi:
-              setText("respond-response-resolution", responseResolution);
-              setText("respond-response-comment", responseComment);
+                setText("respond-buyer", buyerName);
+                setText("respond-mainreason", mainReason);
+                setText("respond-detailreason", detailReason);
+                setText("respond-resolution", resolution);
+                setText("respond-usercontent", userContent || "—");
+                setText("respond-response-resolution", responseResolution);
+                setText("respond-response-comment", responseComment);
 
-              // Hiển thị modal
-              modal.classList.remove("hidden");
-              modal.classList.add("flex");
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
             }
 
             function closeRespondModal() {
-              const modal = document.getElementById("respondModal");
-              modal.classList.add("hidden");
-              modal.classList.remove("flex");
+                const modal = document.getElementById("respondModal");
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
             }
 
-            // Cho phép đóng bằng ESC hoặc click ngoài vùng modal
             window.addEventListener("keydown", (e) => {
-              if (e.key === "Escape") closeRespondModal();
+                if (e.key === "Escape") closeRespondModal();
             });
             document.getElementById("respondModal").addEventListener("click", (e) => {
-              if (e.target.id === "respondModal") closeRespondModal();
+                if (e.target.id === "respondModal") closeRespondModal();
             });
 
-            /* -------- Helpers nhỏ để code gọn & an toàn -------- */
+            /* ===== Helpers ===== */
             function setText(id, value) {
-              const el = document.getElementById(id);
-              if (el) el.textContent = value ?? "";
+                const el = document.getElementById(id);
+                if (el) el.textContent = value ?? "";
             }
+
             function escapeHtml(str) {
-              return (str ?? "").toString()
-                .replace(/&/g,  "&amp;")
-                .replace(/</g,  "&lt;")
-                .replace(/>/g,  "&gt;")
-                .replace(/"/g,  "&quot;")
-                .replace(/'/g,  "&#39;");
+                return (str ?? "").toString()
+                    .replace(/&/g,  "&amp;")
+                    .replace(/</g,  "&lt;")
+                    .replace(/>/g,  "&gt;")
+                    .replace(/"/g,  "&quot;")
+                    .replace(/'/g,  "&#39;");
             }
 
+            /* ========== XỬ LÝ SUBMIT FORM ========== */
+            document.addEventListener("DOMContentLoaded", function () {
+                const respondForm = document.getElementById("respondForm");
+                if (!respondForm) return;
 
-                       
+                respondForm.addEventListener("submit", function (e) {
+                    const checked = document.querySelector('input[name="Resolution"]:checked');
+                    if (!checked) {
+                        e.preventDefault();
+                        alert("Vui lòng chọn hành động phản hồi (Chấp nhận trả hàng / Hoàn tiền toàn bộ / Hoàn tiền một phần).");
+                        return;
+                    }
+
+                    // Nếu muốn confirm:
+                    // if (!confirm("Bạn chắc chắn muốn gửi phản hồi này?")) {
+                    //     e.preventDefault();
+                    // }
+                });
+            });
         </script>
+
         
     </main>
 
