@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿
+using Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -12,7 +13,7 @@ namespace Frontend.Controllers
 		{
 			_httpClient = factory.CreateClient();
 		}
-		public async Task<IActionResult> GetSellerCommentByBuyerId(int buyerId)
+		public async Task<IActionResult> GetSellerCommentByBuyerId(int? buyerId=1)
 		{
 			var urlBuyer = $"http://localhost:5236/api/SellerToBuyer/{buyerId}";
 			var responseBuyer = await _httpClient.GetAsync(urlBuyer);
