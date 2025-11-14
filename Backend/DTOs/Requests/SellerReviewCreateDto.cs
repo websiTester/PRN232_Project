@@ -8,10 +8,7 @@ namespace Backend.DTOs.Requests
         public int OrderId { get; set; }
 
         [Required]
-        public int ProductId { get; set; }
-
-        [Required]
-        [MaxLength(1000)]
+        [MaxLength(2000)]
         public string Comment { get; set; }
     }
 }

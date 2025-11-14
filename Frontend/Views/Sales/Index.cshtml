@@ -1,6 +1,6 @@
 ﻿@model List<Frontend.Models.SellerSalesOrderDto>
 @section Styles {
-        // Tái sử dụng CSS của trang Purchase History để "y hệt"
+            // Tái sử dụng CSS của trang Purchase History để "y hệt"
     <link rel="stylesheet" href="~/css/purchase-history.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/leave-review-modal.css" asp-append-version="true" />
 }
@@ -83,6 +83,14 @@
                 }
 
                 <div class="order-list">
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
                     @if (Model == null || !Model.Any())
                     {
                         <div class="order-card-empty text-center mt-5">
@@ -92,7 +100,6 @@
 
                     @foreach (var order in Model)
                     {
-                        // Lấy item đầu tiên để hiển thị, giữ giao diện giống 1 item
                         var firstItem = order.Items.FirstOrDefault();
 
                         <div class="order-card">
@@ -120,7 +127,6 @@
                                 </div>
 
                                 <div class="order-header-action">
-                                    @* Giả định bạn đã thêm các thuộc tính HasBuyerFeedback, BuyerFeedbackRating, BuyerFeedbackId vào DTO *@
                                     @if (order.HasBuyerFeedback)
                                     {
                                         <a asp-controller="Feedback" asp-action="Details" asp-route-id="@order.BuyerFeedbackId"
@@ -166,7 +172,7 @@
                                             <button class="btn btn-secondary btn-i-d-like-to dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                                 I'd like to...
                                             </button>
-                                            
+
                                             <ul class="dropdown-menu">
                                                 <li>
                                                     <a class="dropdown-item" asp-controller="Sales" asp-action="Details" asp-route-id="@order.OrderId">
@@ -174,7 +180,10 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a class="dropdown-item" href="/review/leavereview?orderId=@order.OrderId&productId=@order.Items[0].ProductId">
+                                                    <a class="dropdown-item"
+                                                       asp-controller="SellerReviews"
+                                                       asp-action="LeaveReview"
+                                                       asp-route-orderId="@order.OrderId">
                                                         Review this buyer
                                                     </a>
                                                 </li>
