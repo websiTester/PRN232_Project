@@ -24,11 +24,16 @@ namespace Frontend.Controllers
             return _httpContextAccessor.HttpContext?.Session.GetString("Role") != "buyer";
         }
 
+        private bool IsGuest()
+        {
+            return _httpContextAccessor.HttpContext?.Session.GetString("Role") == null;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             // 1. Kiểm tra vai trò (Role)
-            if (!IsSeller())
+            if (!IsSeller() || IsGuest())
             {
                 // Nếu không phải Seller, trả về trang Unauthorized hoặc trang chủ
                 return RedirectToAction("Index", "Home");
