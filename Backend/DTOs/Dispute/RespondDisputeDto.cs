@@ -7,5 +7,6 @@
         public string Comment { get; set; }
         public string status { get; set; }
         public DateTime? SolvedDate { get; set; }
+        public int SellerId { get; set; }
     }
 }

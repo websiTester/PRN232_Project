@@ -3,6 +3,7 @@ using Backend.DTOs.Responses;
 using Frontend.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace Frontend.Controllers
@@ -11,10 +12,12 @@ namespace Frontend.Controllers
     {
         private readonly ApiClientHelper _apiClient;
         private readonly ILogger<DisputeController> _logger;
-        public DisputeController(ApiClientHelper apiClient, ILogger<DisputeController> logger)
+        private readonly HttpClient _httpClient;
+        public DisputeController(ApiClientHelper apiClient, ILogger<DisputeController> logger, IHttpClientFactory httpClientFactory)
         {
             _apiClient = apiClient;
             _logger = logger;
+            _httpClient = httpClientFactory.CreateClient("API");
         }
         [Route("dispute/buyer/{buyerId}")]
         [HttpGet]
@@ -263,39 +266,119 @@ namespace Frontend.Controllers
 
         }
 
-        //[ValidateAntiForgeryToken]
-        //[HttpPost]
-        //public async Task<IActionResult> Respond([FromForm] RespondDisputeDto form)
-        //{
-        //    try
-        //    {
-        //        if (form.Id <= 0 || string.IsNullOrWhiteSpace(form.Resolution))
-        //        {
-        //            TempData["Error"] = "Thiếu dữ liệu phản hồi.";
-        //            return RedirectToAction("Seller", "Dispute");
-        //        }
+        [HttpPost]
+        public async Task<IActionResult> Respond(RespondDisputeDto model)
+        {
+            _logger.LogInformation("Bắt đầu lưu phản hồi khiếu nại. DisputeId = {Id}", model.Id);
+            ModelState.Remove(nameof(RespondDisputeDto.SolvedDate));
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState không hợp lệ khi lưu phản hồi. DisputeId = {Id}. Lỗi: {@Errors}",
+                    model.Id, ModelState);
+                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                return RedirectToAction("SellerDispute", new { sellerId = model.SellerId });
+            }
 
-        //        // Map Resolution -> status (không cho client tự gửi)
-        //        form.status = form.Resolution == "full-refund" ? "4" : "2";
-        //        form.SolvedDate = null; // Backend sẽ tự set nếu status == "4"
+            if (string.IsNullOrEmpty(model.Resolution))
+            {
+                _logger.LogWarning("Không chọn Resolution khi gửi phản hồi. DisputeId = {Id}", model.Id);
+                TempData["Error"] = "Bạn phải chọn hành động phản hồi.";
+                return RedirectToAction("SellerDispute", new { sellerId = model.SellerId });
+            }
 
-        //        var res = await _apiClient.PostAsJsonAsync("disputes/respond", form);
-        //        if (!res.IsSuccessStatusCode)
-        //        {
-        //            var err = await res.Content.ReadAsStringAsync();
-        //            TempData["Error"] = $"Gửi phản hồi thất bại: {err}";
-        //            return RedirectToAction("Seller", "Dispute");
-        //        }
+            // Set theo yêu cầu nghiệp vụ
+            model.status = "2";
+            model.SolvedDate = DateTime.Now;
 
-        //        TempData["Success"] = "Đã gửi phản hồi thành công.";
-        //        return RedirectToAction("Seller", "Dispute");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Lỗi gửi phản hồi");
-        //        TempData["Error"] = "Đã xảy ra lỗi hệ thống.";
-        //        return RedirectToAction("Seller", "Dispute");
-        //    }
-        //}
+            
+
+            try
+            {
+                _logger.LogInformation("Gọi API cập nhật dispute. DisputeId = {Id}, Payload = {@Model}",
+                    model.Id, model);
+
+                var response = await _httpClient.PutAsJsonAsync("/api/disputes/respond", model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Cập nhật dispute thành công. DisputeId = {Id}", model.Id);
+                    TempData["Success"] = "Cập nhật phản hồi khiếu nại thành công.";
+                }
+                else
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+
+                    _logger.LogError(
+                        "Gọi API cập nhật dispute thất bại. DisputeId = {Id}, StatusCode = {StatusCode}, Body = {Body}",
+                        model.Id, (int)response.StatusCode, errorBody);
+
+                    TempData["Error"] = "Cập nhật thất bại từ API. Vui lòng thử lại.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception khi gọi API cập nhật dispute. DisputeId = {Id}", model.Id);
+                TempData["Error"] = "Có lỗi hệ thống khi cập nhật. Vui lòng thử lại sau.";
+            }
+
+            return RedirectToAction("SellerDispute", new { sellerId = model.SellerId });
+        }
+        [HttpPost]
+        public async Task<IActionResult> Respond2(RespondDisputeDto model)
+        {
+            _logger.LogInformation("Bắt đầu lưu phản hồi khiếu nại. DisputeId = {Id}", model.Id);
+            ModelState.Remove(nameof(RespondDisputeDto.SolvedDate));
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState không hợp lệ khi lưu phản hồi. DisputeId = {Id}. Lỗi: {@Errors}",
+                    model.Id, ModelState);
+                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                return RedirectToAction("SupporterDispute");
+            }
+
+            if (string.IsNullOrEmpty(model.Resolution))
+            {
+                _logger.LogWarning("Không chọn Resolution khi gửi phản hồi. DisputeId = {Id}", model.Id);
+                TempData["Error"] = "Bạn phải chọn hành động phản hồi.";
+                return RedirectToAction("SupporterDispute");
+            }
+
+            // Set theo yêu cầu nghiệp vụ
+            model.status = "4";
+            model.SolvedDate = DateTime.Now;
+
+
+
+            try
+            {
+                _logger.LogInformation("Gọi API cập nhật dispute. DisputeId = {Id}, Payload = {@Model}",
+                    model.Id, model);
+
+                var response = await _httpClient.PutAsJsonAsync("/api/disputes/respond", model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Cập nhật dispute thành công. DisputeId = {Id}", model.Id);
+                    TempData["Success"] = "Cập nhật phản hồi khiếu nại thành công.";
+                }
+                else
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+
+                    _logger.LogError(
+                        "Gọi API cập nhật dispute thất bại. DisputeId = {Id}, StatusCode = {StatusCode}, Body = {Body}",
+                        model.Id, (int)response.StatusCode, errorBody);
+
+                    TempData["Error"] = "Cập nhật thất bại từ API. Vui lòng thử lại.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception khi gọi API cập nhật dispute. DisputeId = {Id}", model.Id);
+                TempData["Error"] = "Có lỗi hệ thống khi cập nhật. Vui lòng thử lại sau.";
+            }
+
+            return RedirectToAction("SupporterDispute");
+        }
     }
 }

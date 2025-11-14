@@ -55,29 +55,15 @@ namespace Backend.Controllers
 
             return Ok(disputes);
         }
-        [HttpPost("respond")]
-        public async Task<IActionResult> Respond([FromBody] RespondDisputeDto request)
+        [HttpPut("respond")]
+        public async Task<IActionResult> Respond([FromBody] RespondDisputeDto dto)
         {
-            if (request is null) return BadRequest("Body rỗng.");
-            if (request.Id <= 0) return BadRequest("Dispute Id không hợp lệ.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            try
-            {
-                var saved = _service.RespondDisputeAsync(request);
-                return Ok(saved);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi hệ thống.");
-            }
+             _service.RespondDisputeAsync(dto);
+
+            return Ok(new { message = "Cập nhật thành công" });
         }
     }
 }
