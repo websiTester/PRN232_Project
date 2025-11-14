@@ -166,7 +166,7 @@
 
             // SỬA LỖI: URL gọi thẳng đến Backend
             const API_BASE_URL = "http://localhost:5236/api";
-
+            const CORRELATION_ID = @Html.Raw(Json.Serialize(ViewData["CorrelationId"]));
             // === LẤY CÁC ĐỐI TƯỢNG DOM (Không đổi) ===
             const progressBar = document.getElementById('progressBar');
             // ... (tất cả các biến getElementById khác) ...
@@ -298,7 +298,9 @@
                 try {
                     // SỬA LỖI: Gọi thẳng đến Backend và dùng API_TOKEN
                     const response = await fetch(`${API_BASE_URL}/disputev2/disputable`, {
-                        headers: { 'Authorization': 'Bearer ' + API_TOKEN }
+                        headers: { 'Authorization': 'Bearer ' + API_TOKEN ,
+                            'X-Correlation-ID': CORRELATION_ID
+                        }
                     });
 
                     if (response.status === 401) {
@@ -416,7 +418,8 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + API_TOKEN
+                        'Authorization': 'Bearer ' + API_TOKEN,
+                        'X-Correlation-ID': CORRELATION_ID
                     },
                     body: JSON.stringify(apiBody)
                 })
