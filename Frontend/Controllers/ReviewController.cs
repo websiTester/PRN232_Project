@@ -4,20 +4,37 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Frontend.Controllers
 {
     //[Authorize]
     public class ReviewController : Controller
     {
-        private readonly ApiClientHelper _apiClient;
+        private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ReviewController(ApiClientHelper apiClient)
+        private readonly string _apiBaseUrl = "http://localhost:5236/api";
+
+        public ReviewController(IHttpClientFactory factory, IHttpContextAccessor httpContextAccessor)
         {
-            _apiClient = apiClient;
+            _httpClient = factory.CreateClient();
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        //[Authorize(Roles = "seller, supporter")]
+        //private void AddAuthTokenToRequest()
+        //{
+        //    var token = _httpContextAccessor.HttpContext?.Session.GetString("JwtToken");
+
+        //    _httpClient.DefaultRequestHeaders.Authorization = null;
+        //    if (!string.IsNullOrEmpty(token))
+        //    {
+        //        _httpClient.DefaultRequestHeaders.Authorization =
+        //            new AuthenticationHeaderValue("Bearer", token);
+        //    }
+        //}
+
         [HttpGet]
         public IActionResult LeaveReview(int orderId, int productId)
         {
@@ -28,6 +45,7 @@ namespace Frontend.Controllers
             };
             return View(model);
         }
+
 
         //[Authorize(Roles = "seller, supporter")]
         [HttpPost]
@@ -40,16 +58,28 @@ namespace Frontend.Controllers
 
             try
             {
-                var response = await _apiClient.PostAsync("api/reviews/seller-to-buyer", model);
+                //AddAuthTokenToRequest();
+
+                var url = $"{_apiBaseUrl}/reviews/seller-to-buyer";
+
+                var response = await _httpClient.PostAsJsonAsync(url, model);
 
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Review saved successfully!";
                     return RedirectToAction("Index", "Home");
                 }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // 401
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid or missing token. Please log in again.");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden) // 403
+                {
+                    ModelState.AddModelError(string.Empty, "You do not have permission.");
+                }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
+                    ModelState.AddModelError(string.Empty, $"An unexpected error occurred. Status code: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
@@ -60,17 +90,26 @@ namespace Frontend.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = "buyer")]
+        //[Authorize(Roles = "buyer")]
         [HttpGet]
         public async Task<IActionResult> ReceivedReviews()
         {
             try
             {
-                var response = await _apiClient.GetAsync("api/reviews/received");
+                //AddAuthTokenToRequest();
+
+                var url = $"{_apiBaseUrl}/reviews/received";
+
+                var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var reviews = await response.Content.ReadFromJsonAsync<List<ReviewsViewModel>>();
+                    var json = await response.Content.ReadAsStringAsync();
+                    var reviews = JsonSerializer.Deserialize<List<ReviewsViewModel>>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
                     return View(reviews);
                 }
 
