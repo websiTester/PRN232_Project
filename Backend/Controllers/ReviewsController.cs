@@ -20,7 +20,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("seller-to-buyer")]
-        //[Authorize(Roles = "Seller")]
+        [Authorize(Roles = "seller")]
         public async Task<IActionResult> CreateSellerReview([FromBody] SellerReviewCreateDto reviewDto)
         {
             try
@@ -54,7 +54,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("received")]
-        //[Authorize(Roles = "Buyer")]
+        [Authorize(Roles = "buyer")]
         public async Task<IActionResult> GetReviewsReceivedByBuyer()
         {
             try
