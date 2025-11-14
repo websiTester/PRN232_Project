@@ -21,7 +21,7 @@ namespace Frontend.Controllers
 
         private bool IsSeller()
         {
-            return _httpContextAccessor.HttpContext?.Session.GetString("Role") == "Seller";
+            return _httpContextAccessor.HttpContext?.Session.GetString("Role") != "buyer";
         }
 
         [HttpGet]

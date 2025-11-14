@@ -59,7 +59,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("seller/my-sales")]
-        [Authorize(Roles = "Seller")] // Chỉ cho phép Seller
+        [Authorize(Roles = "seller, supporter")] // Chỉ cho phép Seller
         public async Task<IActionResult> GetMySalesHistory()
         {
             try

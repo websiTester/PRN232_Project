@@ -166,31 +166,18 @@
                                             <button class="btn btn-secondary btn-i-d-like-to dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                                 I'd like to...
                                             </button>
-
+                                            
                                             <ul class="dropdown-menu">
                                                 <li>
                                                     <a class="dropdown-item" asp-controller="Sales" asp-action="Details" asp-route-id="@order.OrderId">
-                                                        View order details
+                                                        View detail
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a class="dropdown-item" asp-controller="Message" asp-action="Create" asp-route-userId="@order.BuyerId">
-                                                        Contact buyer
+                                                    <a class="dropdown-item" href="/review/leavereview?orderId=@order.OrderId&productId=@order.Items[0].ProductId">
+                                                        Review this buyer
                                                     </a>
                                                 </li>
-
-                                                @* Giả định bạn đã thêm 'HasBuyerFeedback' và 'BuyerFeedbackId' vào DTO *@
-                                                @if (order.HasBuyerFeedback)
-                                                {
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a class="dropdown-item"
-                                                           asp-controller="Dispute" asp-action="Create" asp-route-feedbackId="@order.BuyerFeedbackId"
-                                                           style="color: #d9534f;">
-                                                            Dispute Feedback
-                                                        </a>
-                                                    </li>
-                                                }
                                             </ul>
                                         </div>
                                     </div>

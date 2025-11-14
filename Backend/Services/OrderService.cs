@@ -85,7 +85,7 @@ namespace Backend.Services
         public async Task<IEnumerable<SellerSalesOrderDto>> GetSalesHistoryAsync(string sellerUsername)
         {
             var user = await GetUserFromUsername(sellerUsername);
-            if (user == null || (user.Role != "Seller" && user.Role != "Supporter")) // Sửa logic role
+            if (user == null || (user.Role != "seller" && user.Role != "supporter")) // Sửa logic role
             {
                 return new List<SellerSalesOrderDto>();
             }
