@@ -45,6 +45,8 @@ public partial class CloneEbayDbContext : DbContext
 
     public virtual DbSet<Review> Reviews { get; set; }
 
+    public virtual DbSet<SellerToBuyerReview> SellerToBuyerReviews { get; set; }
+
     public virtual DbSet<ShippingInfo> ShippingInfos { get; set; }
 
     public virtual DbSet<Store> Stores { get; set; }
@@ -52,10 +54,10 @@ public partial class CloneEbayDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    { 
+    {
 
     }
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
         {
@@ -161,9 +163,10 @@ public partial class CloneEbayDbContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .HasConstraintName("FK__Coupon__productI__60A75C0F");
         });
+
         modelBuilder.Entity<DetailFeedback>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__DetailFe__3213E83F42F835CA");
+            entity.HasKey(e => e.Id).HasName("PK__DetailFe__3213E83F0A7DCC61");
 
             entity.ToTable("DetailFeedback");
 
@@ -175,7 +178,6 @@ public partial class CloneEbayDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DetailFeedback_Feedback");
         });
-
 
         modelBuilder.Entity<Dispute>(entity =>
         {
@@ -264,16 +266,21 @@ public partial class CloneEbayDbContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id);
+            entity.HasKey(e => e.Id).HasName("PK__Message__3213E83F7144CC1A");
+
             entity.ToTable("Message");
+
+            entity.HasIndex(e => e.ProductId, "IX_Message_ProductId");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.SenderId).HasColumnName("senderId");
             entity.Property(e => e.ReceiverId).HasColumnName("receiverId");
+            entity.Property(e => e.SenderId).HasColumnName("senderId");
             entity.Property(e => e.Timestamp)
-                .HasColumnName("timestamp")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasColumnName("timestamp");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.Messages).HasForeignKey(d => d.ProductId);
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -462,6 +469,18 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasOne(d => d.Reviewer).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.ReviewerId)
                 .HasConstraintName("FK__Review__reviewer__59FA5E80");
+        });
+
+        modelBuilder.Entity<SellerToBuyerReview>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__SellerTo__3214EC079F3BB7E7");
+
+            entity.ToTable("SellerToBuyerReview");
+
+            entity.Property(e => e.BuyerName).HasMaxLength(100);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.ProductName).HasMaxLength(255);
+            entity.Property(e => e.SellerName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<ShippingInfo>(entity =>

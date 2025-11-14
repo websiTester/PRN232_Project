@@ -16,7 +16,7 @@ namespace Frontend.Controllers
 		public async Task<IActionResult> OverviewFeedback(int? sellerId = 5)
 		{
 
-			var urlSeller = $"http://localhost:5236/api/Feedback/seller/{sellerId}";
+			var urlSeller = $"http://localhost:5236/api/";
 			var responseOrder = await _httpClient.GetAsync(urlSeller);
 			var json = await responseOrder.Content.ReadAsStringAsync();
 			var user = JsonSerializer.Deserialize<User>(json, new JsonSerializerOptions
