@@ -8,6 +8,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -33,6 +34,26 @@ jobs:
       
     - name: Docker Compose Build
       run: docker compose build
+    - name: Run Docker Compose
+      run: docker compose up -d --build
+    - name: Wait for services
+      run: sleep 10
+
+    - name: Check Backend
+      run: |
+        if curl -s http://localhost:5236/swagger/index.html > /dev/null; then
+          echo "Backend OK";
+        else
+          echo "Backend FAILED"; exit 1;
+        fi
+
+    - name: Check Frontend
+      run: |
+        if curl -s http://localhost:5055 > /dev/null; then
+          echo "Frontend OK";
+        else
+          echo "Frontend FAILED"; exit 1;
+        fi
       
     - name: Stop Docker Compose
       run: docker compose down
